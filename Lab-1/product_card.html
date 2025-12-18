@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Card</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        
+        .product-card {
+            width: 300px;
+            background-color: white;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .product-image {
+            width: 100%;
+            height: 200px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            object-fit: cover;
+        }
+        
+        .product-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        
+        .product-description {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+        
+        .product-price {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .price-label {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        
+        .price-value {
+            font-size: 28px;
+            font-weight: bold;
+            color: #2e7d32;
+        }
+        
+        .buy-button {
+            width: 100%;
+            padding: 12px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        
+        .buy-button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div class="product-card">
+        <img src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=300&h=200&fit=crop" alt="Wireless Headphones" class="product-image">
+        <div class="product-title">Wireless Headphone</div>
+        <div class="product-description">
+            High-quality wireless headphones with noise cancellation and premium sound quality. Perfect for music lovers and professionals.
+        </div>
+        <div class="product-price">
+            <div class="price-label">Price:</div>
+            <div class="price-value">$18</div>
+        </div>
+        <button class="buy-button">Buy Now</button>
+    </div>
+</body>
+</html>
+
