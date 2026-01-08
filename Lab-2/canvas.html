@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTML5 Canvas Exercise</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        canvas {
+            border: 2px solid #333;
+            background-color: white;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="myCanvas" width="500" height="300"></canvas>
+    
+    <script>
+        const canvas = document.getElementById('myCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Draw a filled rectangle (top left)
+        ctx.fillStyle = '#3498db';
+        ctx.fillRect(50, 50, 100, 60);
+        
+        // Draw a filled circle (top center)
+        ctx.fillStyle = '#e74c3c';
+        ctx.beginPath();
+        ctx.arc(250, 80, 40, 0, 2 * Math.PI);
+        ctx.fill();
+        
+        // Draw a straight line (top right)
+        ctx.strokeStyle = '#2ecc71';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(350, 50);
+        ctx.lineTo(450, 120);
+        ctx.stroke();
+        
+        // Draw text "HTML5 Canvas" (centered at bottom)
+        ctx.fillStyle = '#333';
+        ctx.font = 'bold 28px Arial';
+        const text = 'HTML5 Canvas';
+        const textWidth = ctx.measureText(text).width;
+        ctx.fillText(text, (500 - textWidth) / 2, 250);
+    </script>
+</body>
+</html>
+
