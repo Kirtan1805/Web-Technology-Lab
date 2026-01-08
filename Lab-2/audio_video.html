@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTML5 Audio and Video</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .section {
+            background-color: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h2 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+        audio {
+            width: 100%;
+            margin-bottom: 15px;
+        }
+        video {
+            width: 100%;
+            margin-bottom: 15px;
+            display: block;
+        }
+        .controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        button {
+            padding: 8px 16px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        .volume-control {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .volume-control label {
+            font-size: 14px;
+        }
+        .time-display {
+            font-size: 14px;
+            color: #555;
+            margin-left: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Multimedia Web Page</h1>
+    
+    <div class="section">
+        <h2>Audio Player</h2>
+        <audio id="audioPlayer" src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" controls></audio>
+        <div class="controls">
+            <button id="audioPlay">Play</button>
+            <button id="audioPause">Pause</button>
+            <div class="volume-control">
+                <label for="audioVolume">Volume:</label>
+                <input type="range" id="audioVolume" min="0" max="1" step="0.1" value="1">
+            </div>
+            <div class="time-display">
+                <span id="audioCurrentTime">0:00</span> / <span id="audioDuration">0:00</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="section">
+        <h2>Video Player</h2>
+        <video id="videoPlayer" width="100%" height="auto" controls preload="metadata" style="background-color: #000; min-height: 300px;">
+            <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+        <div class="controls">
+            <button id="videoPlay">Play</button>
+            <button id="videoPause">Pause</button>
+            <div class="volume-control">
+                <label for="videoVolume">Volume:</label>
+                <input type="range" id="videoVolume" min="0" max="1" step="0.1" value="1">
+            </div>
+            <div class="time-display">
+                <span id="videoCurrentTime">0:00</span> / <span id="videoDuration">0:00</span>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Audio Player Controls
+        const audioPlayer = document.getElementById('audioPlayer');
+        const audioPlayBtn = document.getElementById('audioPlay');
+        const audioPauseBtn = document.getElementById('audioPause');
+        const audioVolume = document.getElementById('audioVolume');
+        const audioCurrentTime = document.getElementById('audioCurrentTime');
+        const audioDuration = document.getElementById('audioDuration');
+        
+        audioPlayBtn.addEventListener('click', () => {
+            audioPlayer.play();
+        });
+        
+        audioPauseBtn.addEventListener('click', () => {
+            audioPlayer.pause();
+        });
+        
+        audioVolume.addEventListener('input', (e) => {
+            audioPlayer.volume = e.target.value;
+        });
+        
+        audioPlayer.addEventListener('timeupdate', () => {
+            audioCurrentTime.textContent = formatTime(audioPlayer.currentTime);
+            if (audioPlayer.duration) {
+                audioDuration.textContent = formatTime(audioPlayer.duration);
+            }
+        });
+        
+        audioPlayer.addEventListener('loadedmetadata', () => {
+            audioDuration.textContent = formatTime(audioPlayer.duration);
+        });
+        
+        // Video Player Controls
+        const videoPlayer = document.getElementById('videoPlayer');
+        const videoPlayBtn = document.getElementById('videoPlay');
+        const videoPauseBtn = document.getElementById('videoPause');
+        const videoVolume = document.getElementById('videoVolume');
+        const videoCurrentTime = document.getElementById('videoCurrentTime');
+        const videoDuration = document.getElementById('videoDuration');
+        
+        videoPlayBtn.addEventListener('click', () => {
+            videoPlayer.play();
+        });
+        
+        videoPauseBtn.addEventListener('click', () => {
+            videoPlayer.pause();
+        });
+        
+        videoVolume.addEventListener('input', (e) => {
+            videoPlayer.volume = e.target.value;
+        });
+        
+        videoPlayer.addEventListener('timeupdate', () => {
+            videoCurrentTime.textContent = formatTime(videoPlayer.currentTime);
+            if (videoPlayer.duration) {
+                videoDuration.textContent = formatTime(videoPlayer.duration);
+            }
+        });
+        
+        videoPlayer.addEventListener('loadedmetadata', () => {
+            videoDuration.textContent = formatTime(videoPlayer.duration);
+        });
+        
+        // Helper function to format time
+        function formatTime(seconds) {
+            if (isNaN(seconds)) return '0:00';
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+        
+    </script>
+</body>
+</html>
+
