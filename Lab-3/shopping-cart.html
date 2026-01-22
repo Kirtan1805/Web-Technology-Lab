@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Intelligent Shopping Cart with Rule-Driven Discounts</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 20px;
+      margin: 0;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: auto;
+      background: white;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+
+    h2 {
+      color: #333;
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .add-product {
+      background: #f8f9fa;
+      padding: 20px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      border-left: 5px solid #007bff;
+    }
+
+    .add-product h3 {
+      margin-top: 0;
+      color: #007bff;
+    }
+
+    .form-row {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 15px;
+      flex-wrap: wrap;
+    }
+
+    select, input[type="number"], input[type="text"] {
+      padding: 10px;
+      border: 2px solid #ddd;
+      border-radius: 5px;
+      font-size: 14px;
+      flex: 1;
+      min-width: 150px;
+    }
+
+    select:focus, input:focus {
+      border-color: #007bff;
+      outline: none;
+    }
+
+    button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.3s ease;
+    }
+
+    .add-btn {
+      background: #28a745;
+      color: white;
+    }
+
+    .add-btn:hover {
+      background: #218838;
+    }
+
+    .remove-btn {
+      background: #dc3545;
+      color: white;
+      padding: 5px 10px;
+      font-size: 12px;
+    }
+
+    .remove-btn:hover {
+      background: #c82333;
+    }
+
+    .coupon-section {
+      background: #fff3cd;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      border-left: 5px solid #ffc107;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    th {
+      background: #007bff;
+      color: white;
+      padding: 15px;
+      font-weight: bold;
+    }
+
+    td {
+      padding: 12px;
+      text-align: center;
+      border-bottom: 1px solid #eee;
+    }
+
+    tr:nth-child(even) {
+      background: #f8f9fa;
+    }
+
+    tr:hover {
+      background: #e9ecef;
+    }
+
+    .total-section {
+      background: #e7f3ff;
+      padding: 20px;
+      border-radius: 10px;
+      margin-top: 20px;
+      border: 2px solid #007bff;
+    }
+
+    .discount-breakdown {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 8px;
+      margin-top: 15px;
+      font-size: 14px;
+    }
+
+    .discount-item {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 5px;
+    }
+
+    .final-total {
+      font-size: 24px;
+      font-weight: bold;
+      color: #007bff;
+      text-align: center;
+      margin-top: 15px;
+    }
+
+    .time-indicator {
+      text-align: center;
+      margin-bottom: 10px;
+      font-style: italic;
+      color: #666;
+    }
+
+    .empty-cart {
+      text-align: center;
+      color: #666;
+      font-style: italic;
+      padding: 30px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h2>🛒 Intelligent Shopping Cart with Rule-Driven Discounts</h2>
+
+  <!-- Add Product Section -->
+  <div class="add-product">
+    <h3>Add New Product</h3>
+    <div class="form-row">
+      <select id="productSelect">
+        <option value="">Select Product...</option>
+        <option value="Laptop|electronics|50000">💻 Laptop - ₹50,000</option>
+        <option value="Headphones|electronics|2000">🎧 Headphones - ₹2,000</option>
+        <option value="Smartphone|electronics|30000">📱 Smartphone - ₹30,000</option>
+        <option value="Tablet|electronics|25000">📱 Tablet - ₹25,000</option>
+        <option value="Notebook|stationery|100">📓 Notebook - ₹100</option>
+        <option value="Pen Set|stationery|50">✒️ Pen Set - ₹50</option>
+        <option value="T-Shirt|clothing|800">👕 T-Shirt - ₹800</option>
+        <option value="Jeans|clothing|2000">👖 Jeans - ₹2,000</option>
+        <option value="Sneakers|clothing|3000">👟 Sneakers - ₹3,000</option>
+        <option value="Book|books|500">📚 Programming Book - ₹500</option>
+        <option value="Magazine|books|200">📰 Tech Magazine - ₹200</option>
+      </select>
+      <input type="number" id="quantityInput" placeholder="Quantity" min="1" value="1">
+      <button class="add-btn" onclick="addProduct()">➕ Add to Cart</button>
+    </div>
+  </div>
+
+  <!-- Coupon Section -->
+  <div class="coupon-section">
+    <label><strong>Coupon Code:</strong></label>
+    <input type="text" id="coupon" placeholder="SAVE10, FEST20, BULK15, TECH5" style="margin-left: 10px; width: 250px;">
+    <small style="display: block; margin-top: 5px; color: #856404;">
+      Try: SAVE10 (10% off), FEST20 (20% off), BULK15 (15% bulk), TECH5 (5% tech), WELCOME (₹500 off)
+    </small>
+  </div>
+
+  <!-- Cart Table -->
+  <table id="cartTable">
+    <thead>
+      <tr>
+        <th>Product</th>
+        <th>Category</th>
+        <th>Price</th>
+        <th>Quantity</th>
+        <th>Subtotal</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody id="cartBody"></tbody>
+  </table>
+
+  <!-- Total Section -->
+  <div class="total-section" id="totalSection">
+    <div class="time-indicator" id="timeIndicator"></div>
+    <div id="total"></div>
+    <div class="discount-breakdown" id="discountBreakdown"></div>
+    <div class="final-total" id="finalTotal"></div>
+  </div>
+</div>
+
+<script>
+  // 1️⃣ Enhanced Product Array with Categories
+  let products = [
+    { name: "Laptop", category: "electronics", price: 50000, qty: 1 },
+    { name: "Headphones", category: "electronics", price: 2000, qty: 2 },
+    { name: "Notebook", category: "stationery", price: 100, qty: 5 },
+    { name: "T-Shirt", category: "clothing", price: 800, qty: 1 }
+  ];
+
+  // Available products for adding to cart
+  const availableProducts = [
+    { name: "Laptop", category: "electronics", price: 50000 },
+    { name: "Headphones", category: "electronics", price: 2000 },
+    { name: "Smartphone", category: "electronics", price: 30000 },
+    { name: "Tablet", category: "electronics", price: 25000 },
+    { name: "Notebook", category: "stationery", price: 100 },
+    { name: "Pen Set", category: "stationery", price: 50 },
+    { name: "T-Shirt", category: "clothing", price: 800 },
+    { name: "Jeans", category: "clothing", price: 2000 },
+    { name: "Sneakers", category: "clothing", price: 3000 },
+    { name: "Book", category: "books", price: 500 },
+    { name: "Magazine", category: "books", price: 200 }
+  ];
+
+  // 2️⃣ Add Product Functionality
+  function addProduct() {
+    const select = document.getElementById("productSelect");
+    const quantity = parseInt(document.getElementById("quantityInput").value);
+
+    if (!select.value || quantity < 1) {
+      alert("Please select a product and enter valid quantity!");
+      return;
+    }
+
+    const [name, category, priceStr] = select.value.split("|");
+    const price = parseInt(priceStr);
+
+    // Check if product already exists in cart
+    const existingIndex = products.findIndex(p => p.name === name);
+
+    if (existingIndex !== -1) {
+      products[existingIndex].qty += quantity;
+    } else {
+      products.push({ name, category, price, qty: quantity });
+    }
+
+    select.value = "";
+    document.getElementById("quantityInput").value = "1";
+    renderCart();
+  }
+
+  function renderCart() {
+    const cartBody = document.getElementById("cartBody");
+    const cartTable = document.getElementById("cartTable");
+
+    if (products.length === 0) {
+      cartTable.style.display = "none";
+      cartBody.innerHTML = '<tr><td colspan="6" class="empty-cart">Your cart is empty. Add some products!</td></tr>';
+      document.getElementById("totalSection").style.display = "none";
+      return;
+    }
+
+    cartTable.style.display = "table";
+    document.getElementById("totalSection").style.display = "block";
+    cartBody.innerHTML = "";
+
+    products.forEach((p, index) => {
+      const subtotal = p.price * p.qty;
+      cartBody.innerHTML += `
+        <tr>
+          <td>${p.name}</td>
+          <td><span style="background: #e9ecef; padding: 3px 8px; border-radius: 3px;">${p.category}</span></td>
+          <td>₹${p.price.toLocaleString()}</td>
+          <td>
+            <input type="number" min="1" value="${p.qty}"
+              onchange="updateQty(${index}, this.value)"
+              style="width: 60px; text-align: center;">
+          </td>
+          <td><strong>₹${subtotal.toLocaleString()}</strong></td>
+          <td>
+            <button class="remove-btn" onclick="removeItem(${index})">Remove</button>
+          </td>
+        </tr>
+      `;
+    });
+
+    calculateTotal();
+  }
+
+  // 2️⃣ Update Quantity
+  function updateQty(index, value) {
+    const qty = parseInt(value);
+    if (qty < 1) return;
+    products[index].qty = qty;
+    calculateTotal();
+  }
+
+  // 2️⃣ Remove Item
+  function removeItem(index) {
+    products.splice(index, 1);
+    renderCart();
+  }
+
+  // 3️⃣ + 4️⃣ + 5️⃣ Advanced Discount Logic with Rule-Driven System
+  function calculateTotal() {
+    let subtotal = 0;
+    let appliedDiscounts = [];
+    let totalDiscount = 0;
+
+    // Calculate base subtotal
+    products.forEach(p => {
+      subtotal += p.price * p.qty;
+    });
+
+    // 3️⃣ Bulk Discounts (Quantity-based)
+    let bulkDiscount = 0;
+    products.forEach(p => {
+      if (p.qty >= 10) {
+        const discount = p.price * p.qty * 0.20; // 20% off for 10+ items
+        bulkDiscount += discount;
+        appliedDiscounts.push(`Bulk 20% off on ${p.qty}x ${p.name}`);
+      } else if (p.qty >= 5) {
+        const discount = p.price * p.qty * 0.10; // 10% off for 5+ items
+        bulkDiscount += discount;
+        appliedDiscounts.push(`Bulk 10% off on ${p.qty}x ${p.name}`);
+      } else if (p.qty >= 3) {
+        const discount = p.price * p.qty * 0.05; // 5% off for 3+ items
+        bulkDiscount += discount;
+        appliedDiscounts.push(`Bulk 5% off on ${p.qty}x ${p.name}`);
+      }
+    });
+
+    // 3️⃣ Category-based Discounts
+    let categoryDiscount = 0;
+    const categoryCounts = {};
+    products.forEach(p => {
+      categoryCounts[p.category] = (categoryCounts[p.category] || 0) + p.qty;
+    });
+
+    products.forEach(p => {
+      if (p.category === "electronics" && categoryCounts[p.category] >= 2) {
+        const discount = p.price * p.qty * 0.08; // 8% off electronics when 2+ items
+        categoryDiscount += discount;
+        appliedDiscounts.push(`Electronics bundle 8% off on ${p.name}`);
+      } else if (p.category === "clothing" && categoryCounts[p.category] >= 3) {
+        const discount = p.price * p.qty * 0.12; // 12% off clothing when 3+ items
+        categoryDiscount += discount;
+        appliedDiscounts.push(`Fashion bundle 12% off on ${p.name}`);
+      } else if (p.category === "books" && categoryCounts[p.category] >= 5) {
+        const discount = p.price * p.qty * 0.15; // 15% off books when 5+ items
+        categoryDiscount += discount;
+        appliedDiscounts.push(`Book lover 15% off on ${p.name}`);
+      }
+    });
+
+    // Time-based Discounts
+    let timeDiscount = 0;
+    const now = new Date();
+    const hour = now.getHours();
+    const day = now.getDay(); // 0 = Sunday, 6 = Saturday
+
+    let timeMessage = "";
+    if (hour >= 18 && hour <= 22) {
+      timeDiscount = subtotal * 0.05; // 5% evening discount
+      appliedDiscounts.push("Evening shopping 5% off (6-10 PM)");
+      timeMessage = "🌙 Evening shopping hours - Extra 5% discount applied!";
+    } else if (hour >= 9 && hour <= 12) {
+      timeDiscount = subtotal * 0.03; // 3% morning discount
+      appliedDiscounts.push("Morning shopping 3% off (9 AM-12 PM)");
+      timeMessage = "☀️ Morning shopping hours - Special 3% discount applied!";
+    } else if (day === 0 || day === 6) {
+      timeDiscount = subtotal * 0.04; // 4% weekend discount
+      appliedDiscounts.push("Weekend special 4% off");
+      timeMessage = "🎉 Weekend shopping - Enjoy 4% extra discount!";
+    }
+
+    document.getElementById("timeIndicator").textContent = timeMessage;
+
+    // 4️⃣ Advanced Coupon Parsing using String Methods
+    const coupon = document.getElementById("coupon").value.trim().toUpperCase();
+    let couponDiscount = 0;
+
+    if (coupon) {
+      // Percentage-based coupons (SAVE10, SAVE20, etc.)
+      if (coupon.startsWith("SAVE")) {
+        const percentStr = coupon.substring(4);
+        const percent = parseInt(percentStr);
+        if (!isNaN(percent) && percent > 0 && percent <= 50) {
+          couponDiscount = (subtotal - bulkDiscount - categoryDiscount) * (percent / 100);
+          appliedDiscounts.push(`Coupon ${coupon}: ${percent}% off`);
+        } else {
+          appliedDiscounts.push("Invalid SAVE coupon format");
+        }
+      }
+      // Fixed amount coupons (FLAT500, FLAT1000)
+      else if (coupon.startsWith("FLAT")) {
+        const amountStr = coupon.substring(4);
+        const amount = parseInt(amountStr);
+        if (!isNaN(amount) && amount > 0) {
+          couponDiscount = Math.min(amount, subtotal * 0.5); // Max 50% off
+          appliedDiscounts.push(`Coupon ${coupon}: ₹${amount} off`);
+        }
+      }
+      // Special event coupons
+      else if (coupon === "FEST20") {
+        couponDiscount = subtotal * 0.20;
+        appliedDiscounts.push("Festival special: 20% off");
+      }
+      else if (coupon === "BULK15") {
+        couponDiscount = subtotal * 0.15;
+        appliedDiscounts.push("Bulk purchase: 15% off");
+      }
+      else if (coupon === "TECH5") {
+        const techItems = products.filter(p => p.category === "electronics");
+        if (techItems.length > 0) {
+          const techTotal = techItems.reduce((sum, p) => sum + (p.price * p.qty), 0);
+          couponDiscount = techTotal * 0.05;
+          appliedDiscounts.push("Tech products: 5% off");
+        }
+      }
+      else if (coupon === "WELCOME") {
+        couponDiscount = Math.min(500, subtotal * 0.1);
+        appliedDiscounts.push("Welcome coupon: ₹500 off (max 10%)");
+      }
+      // Category-specific coupons (BOOKS10, CLOTH15)
+      else if (coupon.endsWith("10") || coupon.endsWith("15") || coupon.endsWith("20")) {
+        const percentStr = coupon.slice(-2);
+        const percent = parseInt(percentStr);
+        const categoryName = coupon.slice(0, -2).toLowerCase();
+
+        const categoryItems = products.filter(p => p.category === categoryName);
+        if (categoryItems.length > 0) {
+          const categoryTotal = categoryItems.reduce((sum, p) => sum + (p.price * p.qty), 0);
+          couponDiscount = categoryTotal * (percent / 100);
+          appliedDiscounts.push(`${categoryName} category: ${percent}% off`);
+        } else {
+          appliedDiscounts.push(`No ${categoryName} items found for coupon`);
+        }
+      }
+      else {
+        appliedDiscounts.push("Invalid coupon code");
+      }
+    }
+
+    // Calculate final amounts
+    totalDiscount = bulkDiscount + categoryDiscount + timeDiscount + couponDiscount;
+    const finalAmount = Math.max(0, subtotal - totalDiscount);
+
+    // Update display
+    document.getElementById("total").innerHTML = `
+      <strong>Subtotal:</strong> ₹${subtotal.toLocaleString()}
+    `;
+
+    // Discount breakdown
+    const breakdown = document.getElementById("discountBreakdown");
+    if (appliedDiscounts.length > 0) {
+      breakdown.innerHTML = "<strong>Applied Discounts:</strong><br>" +
+        appliedDiscounts.map(discount =>
+          `<div class="discount-item"><span>${discount}</span></div>`
+        ).join("");
+    } else {
+      breakdown.innerHTML = "<em>No discounts applied</em>";
+    }
+
+    document.getElementById("finalTotal").innerHTML = `
+      <strong>Final Amount: ₹${finalAmount.toLocaleString()}</strong>
+      ${totalDiscount > 0 ? `<br><small style="color: #28a745;">You saved ₹${totalDiscount.toLocaleString()}!</small>` : ''}
+    `;
+
+    return finalAmount;
+  }
+
+  // Event listeners for real-time updates
+  document.getElementById("coupon").addEventListener("input", calculateTotal);
+
+  // Initialize cart
+  renderCart();
+
+  // Auto-update every minute for time-based discounts
+  setInterval(() => {
+    const now = new Date();
+    const hour = now.getHours();
+    if ((hour >= 9 && hour <= 12) || (hour >= 18 && hour <= 22) || [0, 6].includes(now.getDay())) {
+      calculateTotal();
+    }
+  }, 60000);
+</script>
+
+</body>
+</html>

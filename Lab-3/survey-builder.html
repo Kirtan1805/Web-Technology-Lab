@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dynamic Survey Builder with DOM-Generated Forms</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+      color: #333;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 15px;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #FF6B6B 0%, #4ECDC4 100%);
+      color: white;
+      padding: 25px;
+      text-align: center;
+    }
+
+    .header h1 {
+      font-size: 28px;
+      margin-bottom: 5px;
+    }
+
+    .header p {
+      opacity: 0.9;
+      font-size: 14px;
+    }
+
+    .survey-container {
+      padding: 30px;
+    }
+
+    .progress-container {
+      margin-bottom: 30px;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 8px;
+      background: #e1e8ed;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 10px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(135deg, #FF6B6B 0%, #4ECDC4 100%);
+      width: 0%;
+      transition: width 0.3s ease;
+      border-radius: 4px;
+    }
+
+    .progress-text {
+      text-align: center;
+      font-size: 14px;
+      color: #666;
+    }
+
+    .question-card {
+      background: #f8f9fa;
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 20px;
+      border-left: 5px solid #FF6B6B;
+      transition: all 0.3s ease;
+    }
+
+    .question-card:hover {
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      transform: translateY(-2px);
+    }
+
+    .question-card.valid {
+      border-left-color: #4ECDC4;
+      background: #f0fff9;
+    }
+
+    .question-card.invalid {
+      border-left-color: #e74c3c;
+      background: #fff8f8;
+    }
+
+    .question-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 10px;
+      color: #333;
+    }
+
+    .question-description {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 15px;
+    }
+
+    .required-indicator {
+      color: #e74c3c;
+      font-weight: bold;
+      margin-left: 5px;
+    }
+
+    .form-field {
+      margin-bottom: 15px;
+    }
+
+    input[type="text"], input[type="email"], textarea {
+      width: 100%;
+      padding: 12px 15px;
+      border: 2px solid #e1e8ed;
+      border-radius: 8px;
+      font-size: 16px;
+      transition: all 0.3s ease;
+      background: white;
+    }
+
+    input[type="text"]:focus, input[type="email"]:focus, textarea:focus {
+      outline: none;
+      border-color: #4ECDC4;
+      box-shadow: 0 0 0 3px rgba(78, 205, 196, 0.1);
+    }
+
+    input.valid {
+      border-color: #4ECDC4;
+      background: #f8fff9;
+    }
+
+    input.invalid {
+      border-color: #e74c3c;
+      background: #fff8f8;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    .radio-group, .checkbox-group {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .option-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px;
+      border-radius: 6px;
+      transition: background-color 0.2s ease;
+    }
+
+    .option-item:hover {
+      background: #f0f2f5;
+    }
+
+    .option-item input[type="radio"], .option-item input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      margin: 0;
+    }
+
+    .option-item label {
+      font-size: 16px;
+      cursor: pointer;
+      margin: 0;
+      flex: 1;
+    }
+
+    .character-counter {
+      text-align: right;
+      font-size: 12px;
+      color: #666;
+      margin-top: 5px;
+    }
+
+    .character-counter.warning {
+      color: #f39c12;
+    }
+
+    .character-counter.danger {
+      color: #e74c3c;
+    }
+
+    .selection-counter {
+      font-size: 12px;
+      color: #666;
+      margin-top: 5px;
+    }
+
+    .error-message {
+      color: #e74c3c;
+      font-size: 14px;
+      margin-top: 5px;
+      display: block;
+      font-weight: 500;
+    }
+
+    .success-message {
+      color: #4ECDC4;
+      font-size: 14px;
+      margin-top: 5px;
+      display: block;
+      font-weight: 500;
+    }
+
+    .validation-summary {
+      background: #fff3cd;
+      border: 1px solid #ffc107;
+      border-radius: 8px;
+      padding: 15px;
+      margin-top: 20px;
+      display: none;
+    }
+
+    .validation-summary.show {
+      display: block;
+    }
+
+    .validation-summary h4 {
+      color: #856404;
+      margin-bottom: 10px;
+    }
+
+    .validation-summary ul {
+      margin-left: 20px;
+    }
+
+    .validation-summary li {
+      margin-bottom: 5px;
+      color: #856404;
+    }
+
+    .submit-section {
+      background: #f8f9fa;
+      padding: 20px;
+      border-radius: 10px;
+      margin-top: 30px;
+      text-align: center;
+    }
+
+    .submit-btn {
+      padding: 15px 40px;
+      background: linear-gradient(135deg, #FF6B6B 0%, #4ECDC4 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 18px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-top: 15px;
+    }
+
+    .submit-btn:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(255, 107, 107, 0.3);
+    }
+
+    .submit-btn:disabled {
+      background: #cccccc;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .field-hint {
+      font-size: 12px;
+      color: #666;
+      margin-top: 5px;
+      font-style: italic;
+    }
+
+    .question-stats {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 10px;
+      font-size: 12px;
+      color: #666;
+    }
+
+    .question-type-badge {
+      background: #e1e8ed;
+      color: #666;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 11px;
+      text-transform: uppercase;
+      font-weight: bold;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        margin: 10px;
+      }
+
+      .survey-container {
+        padding: 20px;
+      }
+
+      .question-card {
+        padding: 15px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+  <div class="header">
+    <h1>📋 Dynamic Survey Builder</h1>
+    <p>DOM-Generated Forms with Real-time Validation</p>
+  </div>
+
+  <div class="survey-container">
+    <div class="progress-container">
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+      <div class="progress-text" id="progressText">0 of 0 questions completed</div>
+    </div>
+
+    <form id="surveyForm">
+      <div id="questionsContainer">
+        <!-- Questions will be dynamically generated here -->
+      </div>
+
+      <div class="validation-summary" id="validationSummary">
+        <h4>⚠️ Validation Summary</h4>
+        <ul id="validationList"></ul>
+      </div>
+
+      <div class="submit-section">
+        <h3>Ready to Submit Your Survey?</h3>
+        <p>Please ensure all required questions are answered correctly before submitting.</p>
+        <button type="submit" class="submit-btn" id="submitBtn" disabled>
+          🚀 Submit Survey
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  // 1️⃣ Question Data Structure
+  const surveyQuestions = [
+    {
+      id: "name",
+      type: "text",
+      title: "What is your full name?",
+      description: "Please provide your complete legal name",
+      required: true,
+      validation: {
+        minLength: 2,
+        maxLength: 50,
+        pattern: /^[a-zA-Z\s]+$/
+      },
+      placeholder: "Enter your full name"
+    },
+    {
+      id: "email",
+      type: "text",
+      title: "What is your email address?",
+      description: "We'll use this to send you survey results",
+      required: true,
+      validation: {
+        pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+        maxLength: 100
+      },
+      placeholder: "your.email@example.com"
+    },
+    {
+      id: "age",
+      type: "text",
+      title: "What is your age?",
+      description: "This helps us understand our audience demographics",
+      required: true,
+      validation: {
+        pattern: /^\d+$/,
+        min: 13,
+        max: 120
+      },
+      placeholder: "Enter your age (13-120)"
+    },
+    {
+      id: "experience",
+      type: "radio",
+      title: "What is your programming experience level?",
+      description: "Select the option that best describes your experience",
+      required: true,
+      options: [
+        { value: "beginner", label: "Beginner (0-1 years)" },
+        { value: "intermediate", label: "Intermediate (1-3 years)" },
+        { value: "advanced", label: "Advanced (3-5 years)" },
+        { value: "expert", label: "Expert (5+ years)" }
+      ]
+    },
+    {
+      id: "languages",
+      type: "checkbox",
+      title: "Which programming languages do you know?",
+      description: "Select all that apply (minimum 1, maximum 5)",
+      required: true,
+      validation: {
+        minSelections: 1,
+        maxSelections: 5
+      },
+      options: [
+        { value: "javascript", label: "JavaScript" },
+        { value: "python", label: "Python" },
+        { value: "java", label: "Java" },
+        { value: "cpp", label: "C++" },
+        { value: "csharp", label: "C#" },
+        { value: "php", label: "PHP" },
+        { value: "ruby", label: "Ruby" },
+        { value: "swift", label: "Swift" },
+        { value: "kotlin", label: "Kotlin" },
+        { value: "typescript", label: "TypeScript" }
+      ]
+    },
+    {
+      id: "frameworks",
+      type: "checkbox",
+      title: "Which web frameworks have you used?",
+      description: "Select all frameworks you've worked with (optional, maximum 3)",
+      required: false,
+      validation: {
+        maxSelections: 3
+      },
+      options: [
+        { value: "react", label: "React" },
+        { value: "vue", label: "Vue.js" },
+        { value: "angular", label: "Angular" },
+        { value: "express", label: "Express.js" },
+        { value: "django", label: "Django" },
+        { value: "laravel", label: "Laravel" },
+        { value: "spring", label: "Spring Boot" }
+      ]
+    },
+    {
+      id: "feedback",
+      type: "text",
+      title: "Any additional feedback or comments?",
+      description: "Share your thoughts about this survey or programming in general",
+      required: false,
+      validation: {
+        maxLength: 500
+      },
+      placeholder: "Your feedback helps us improve...",
+      multiline: true
+    },
+    {
+      id: "projects",
+      type: "text",
+      title: "How many personal projects have you completed?",
+      description: "Include any coding projects you've worked on outside of work/school",
+      required: true,
+      validation: {
+        pattern: /^\d+$/,
+        min: 0,
+        max: 100
+      },
+      placeholder: "Number of completed projects"
+    }
+  ];
+
+  // DOM Elements
+  const form = document.getElementById("surveyForm");
+  const questionsContainer = document.getElementById("questionsContainer");
+  const progressFill = document.getElementById("progressFill");
+  const progressText = document.getElementById("progressText");
+  const submitBtn = document.getElementById("submitBtn");
+  const validationSummary = document.getElementById("validationSummary");
+  const validationList = document.getElementById("validationList");
+
+  let validationErrors = [];
+  let questionStates = new Map();
+
+  // 2️⃣ Dynamic Form Generation
+  function generateQuestionHTML(question) {
+    const isRequired = question.required;
+    const isValid = questionStates.get(question.id)?.isValid || false;
+
+    let html = `
+      <div class="question-card ${isValid ? 'valid' : questionStates.get(question.id)?.isValid === false ? 'invalid' : ''}" data-question-id="${question.id}">
+        <div class="question-title">
+          ${question.title}
+          ${isRequired ? '<span class="required-indicator">*</span>' : ''}
+          <span class="question-type-badge">${question.type}</span>
+        </div>
+        ${question.description ? `<div class="question-description">${question.description}</div>` : ''}
+
+        <div class="form-field">
+    `;
+
+    // Generate different input types based on question type
+    switch (question.type) {
+      case "text":
+        const isMultiline = question.multiline;
+        const inputType = question.id === "email" ? "email" : "text";
+        const maxLength = question.validation?.maxLength;
+
+        html += `
+          <${isMultiline ? 'textarea' : 'input'}
+            type="${inputType}"
+            id="${question.id}"
+            name="${question.id}"
+            placeholder="${question.placeholder || ''}"
+            ${maxLength ? `maxlength="${maxLength}"` : ''}
+            ${isRequired ? 'required' : ''}
+            value="${questionStates.get(question.id)?.value || ''}"
+          >${isMultiline ? (questionStates.get(question.id)?.value || '') : ''}</${isMultiline ? 'textarea' : 'input'}>
+          ${maxLength ? `<div class="character-counter" id="${question.id}Counter">0 / ${maxLength} characters</div>` : ''}
+        `;
+        break;
+
+      case "radio":
+        html += '<div class="radio-group">';
+        question.options.forEach(option => {
+          const isChecked = questionStates.get(question.id)?.value === option.value;
+          html += `
+            <div class="option-item">
+              <input type="radio" id="${question.id}_${option.value}" name="${question.id}" value="${option.value}" ${isChecked ? 'checked' : ''}>
+              <label for="${question.id}_${option.value}">${option.label}</label>
+            </div>
+          `;
+        });
+        html += '</div>';
+        break;
+
+      case "checkbox":
+        html += '<div class="checkbox-group">';
+        question.options.forEach(option => {
+          const selectedValues = questionStates.get(question.id)?.value || [];
+          const isChecked = selectedValues.includes(option.value);
+          html += `
+            <div class="option-item">
+              <input type="checkbox" id="${question.id}_${option.value}" name="${question.id}" value="${option.value}" ${isChecked ? 'checked' : ''}>
+              <label for="${question.id}_${option.value}">${option.label}</label>
+            </div>
+          `;
+        });
+        html += '</div>';
+
+        const validation = question.validation;
+        if (validation && (validation.minSelections || validation.maxSelections)) {
+          const min = validation.minSelections || 0;
+          const max = validation.maxSelections || question.options.length;
+          html += `<div class="selection-counter" id="${question.id}Counter">Selected: 0 (min: ${min}, max: ${max})</div>`;
+        }
+        break;
+    }
+
+    html += `
+        </div>
+        <div class="error-message" id="${question.id}Error"></div>
+        <div class="success-message" id="${question.id}Success"></div>
+        ${question.fieldHint ? `<div class="field-hint">${question.fieldHint}</div>` : ''}
+        <div class="question-stats">
+          <span>${isRequired ? 'Required' : 'Optional'}</span>
+          <span>ID: ${question.id}</span>
+        </div>
+      </div>
+    `;
+
+    return html;
+  }
+
+  function renderQuestions() {
+    questionsContainer.innerHTML = "";
+    surveyQuestions.forEach(question => {
+      questionsContainer.innerHTML += generateQuestionHTML(question);
+    });
+    updateProgress();
+  }
+
+  // 3️⃣ Client-Side Validation Functions
+  function validateQuestion(questionId) {
+    const question = surveyQuestions.find(q => q.id === questionId);
+    if (!question) return true;
+
+    let isValid = true;
+    let errorMessage = "";
+    let successMessage = "";
+    let value = null;
+
+    // Get field value based on type
+    switch (question.type) {
+      case "text":
+        const input = document.getElementById(questionId);
+        value = input.value.trim();
+        isValid = validateTextInput(value, question);
+        if (!isValid.valid) {
+          errorMessage = isValid.message;
+        } else if (value) {
+          successMessage = "✓ Valid input";
+        }
+        break;
+
+      case "radio":
+        const radioButtons = document.querySelectorAll(`input[name="${questionId}"]:checked`);
+        value = radioButtons.length > 0 ? radioButtons[0].value : null;
+        isValid = question.required ? value !== null : true;
+        if (!isValid) {
+          errorMessage = "Please select an option";
+        } else if (value) {
+          successMessage = "✓ Option selected";
+        }
+        break;
+
+      case "checkbox":
+        const checkboxes = document.querySelectorAll(`input[name="${questionId}"]:checked`);
+        const selectedValues = Array.from(checkboxes).map(cb => cb.value);
+        value = selectedValues;
+
+        const validation = question.validation;
+        if (validation) {
+          const count = selectedValues.length;
+          if (validation.minSelections && count < validation.minSelections) {
+            isValid = false;
+            errorMessage = `Please select at least ${validation.minSelections} option(s)`;
+          } else if (validation.maxSelections && count > validation.maxSelections) {
+            isValid = false;
+            errorMessage = `Please select no more than ${validation.maxSelections} option(s)`;
+          }
+        } else {
+          isValid = question.required ? selectedValues.length > 0 : true;
+          if (!isValid) {
+            errorMessage = "Please select at least one option";
+          }
+        }
+
+        if (isValid && selectedValues.length > 0) {
+          successMessage = `✓ ${selectedValues.length} option(s) selected`;
+        }
+
+        // Update selection counter
+        updateSelectionCounter(questionId, selectedValues.length, question);
+        break;
+    }
+
+    // Update question state
+    questionStates.set(questionId, {
+      isValid: isValid,
+      value: value,
+      error: errorMessage,
+      success: successMessage
+    });
+
+    // Update UI
+    updateQuestionUI(questionId, isValid, errorMessage, successMessage);
+
+    return isValid;
+  }
+
+  function validateTextInput(value, question) {
+    const validation = question.validation;
+    if (!validation) return { valid: true };
+
+    // Required check
+    if (question.required && !value) {
+      return { valid: false, message: "This field is required" };
+    }
+
+    // Skip further validation if empty and not required
+    if (!value && !question.required) {
+      return { valid: true };
+    }
+
+    // Pattern validation
+    if (validation.pattern && !validation.pattern.test(value)) {
+      let message = "Invalid format";
+      if (question.id === "email") message = "Please enter a valid email address";
+      else if (question.id === "age") message = "Please enter a valid age (13-120)";
+      else if (question.id === "name") message = "Name can only contain letters and spaces";
+      else if (question.id === "projects") message = "Please enter a valid number";
+      return { valid: false, message: message };
+    }
+
+    // Length validation
+    if (validation.minLength && value.length < validation.minLength) {
+      return { valid: false, message: `Minimum ${validation.minLength} characters required` };
+    }
+
+    if (validation.maxLength && value.length > validation.maxLength) {
+      return { valid: false, message: `Maximum ${validation.maxLength} characters allowed` };
+    }
+
+    // Numeric range validation
+    if (validation.min !== undefined && parseInt(value) < validation.min) {
+      return { valid: false, message: `Value must be at least ${validation.min}` };
+    }
+
+    if (validation.max !== undefined && parseInt(value) > validation.max) {
+      return { valid: false, message: `Value must be no more than ${validation.max}` };
+    }
+
+    return { valid: true };
+  }
+
+  // 4️⃣ UI Update Functions
+  function updateQuestionUI(questionId, isValid, errorMessage, successMessage) {
+    const questionCard = document.querySelector(`[data-question-id="${questionId}"]`);
+    const errorElement = document.getElementById(`${questionId}Error`);
+    const successElement = document.getElementById(`${questionId}Success`);
+    const input = document.getElementById(questionId);
+
+    // Update card styling
+    questionCard.classList.remove("valid", "invalid");
+    if (errorMessage) {
+      questionCard.classList.add("invalid");
+    } else if (successMessage) {
+      questionCard.classList.add("valid");
+    }
+
+    // Update input styling
+    if (input && input.type !== "radio" && input.type !== "checkbox") {
+      input.classList.remove("valid", "invalid");
+      if (errorMessage) {
+        input.classList.add("invalid");
+      } else if (successMessage) {
+        input.classList.add("valid");
+      }
+    }
+
+    // Update messages
+    errorElement.textContent = errorMessage;
+    successElement.textContent = successMessage;
+  }
+
+  function updateSelectionCounter(questionId, count, question) {
+    const counter = document.getElementById(`${questionId}Counter`);
+    if (!counter) return;
+
+    const validation = question.validation;
+    const min = validation?.minSelections || 0;
+    const max = validation?.maxSelections || question.options.length;
+
+    counter.textContent = `Selected: ${count} (min: ${min}, max: ${max})`;
+
+    if (count < min) {
+      counter.style.color = "#e74c3c";
+    } else if (count > max) {
+      counter.style.color = "#e74c3c";
+    } else {
+      counter.style.color = "#666";
+    }
+  }
+
+  function updateCharacterCounter(questionId, length, maxLength) {
+    const counter = document.getElementById(`${questionId}Counter`);
+    if (!counter) return;
+
+    counter.textContent = `${length} / ${maxLength} characters`;
+
+    counter.classList.remove("warning", "danger");
+    if (length > maxLength * 0.9) {
+      counter.classList.add("danger");
+    } else if (length > maxLength * 0.8) {
+      counter.classList.add("warning");
+    }
+  }
+
+  // 5️⃣ Progress Tracking
+  function updateProgress() {
+    const totalQuestions = surveyQuestions.length;
+    const completedQuestions = Array.from(questionStates.values()).filter(state => state.isValid).length;
+
+    const percentage = totalQuestions > 0 ? (completedQuestions / totalQuestions) * 100 : 0;
+
+    progressFill.style.width = `${percentage}%`;
+    progressText.textContent = `${completedQuestions} of ${totalQuestions} questions completed`;
+  }
+
+  // 6️⃣ Form Validation and Submission
+  function validateAllQuestions() {
+    validationErrors = [];
+    let allValid = true;
+
+    surveyQuestions.forEach(question => {
+      const isValid = validateQuestion(question.id);
+      if (!isValid) {
+        allValid = false;
+        const errorMsg = document.getElementById(`${question.id}Error`).textContent;
+        if (errorMsg) {
+          validationErrors.push(`Question ${surveyQuestions.indexOf(question) + 1} (${question.title}): ${errorMsg}`);
+        }
+      }
+    });
+
+    // Update validation summary
+    updateValidationSummary();
+
+    // Update submit button
+    submitBtn.disabled = !allValid;
+
+    return allValid;
+  }
+
+  function updateValidationSummary() {
+    if (validationErrors.length > 0) {
+      validationList.innerHTML = validationErrors.map(error => `<li>❌ ${error}</li>`).join("");
+      validationSummary.classList.add("show");
+    } else {
+      validationSummary.classList.remove("show");
+    }
+  }
+
+  // Event Listeners
+  form.addEventListener("input", function(e) {
+    const target = e.target;
+    const questionId = target.name || target.id;
+
+    if (questionId) {
+      // Handle character counter for text inputs
+      if (target.type === "text" || target.type === "email" || target.tagName === "TEXTAREA") {
+        const question = surveyQuestions.find(q => q.id === questionId);
+        if (question?.validation?.maxLength) {
+          updateCharacterCounter(questionId, target.value.length, question.validation.maxLength);
+        }
+      }
+
+      // Validate question
+      validateQuestion(questionId);
+      validateAllQuestions();
+      updateProgress();
+    }
+  });
+
+  form.addEventListener("change", function(e) {
+    const target = e.target;
+    const questionId = target.name || target.id;
+
+    if (questionId) {
+      // Handle checkbox groups
+      if (target.type === "checkbox") {
+        const checkboxes = document.querySelectorAll(`input[name="${questionId}"]:checked`);
+        const selectedValues = Array.from(checkboxes).map(cb => cb.value);
+        const question = surveyQuestions.find(q => q.id === questionId);
+
+        questionStates.set(questionId, {
+          isValid: false, // Will be validated below
+          value: selectedValues
+        });
+
+        updateSelectionCounter(questionId, selectedValues.length, question);
+      }
+
+      validateQuestion(questionId);
+      validateAllQuestions();
+      updateProgress();
+    }
+  });
+
+  form.addEventListener("submit", function(e) {
+    e.preventDefault();
+
+    if (validateAllQuestions()) {
+      // Collect all responses
+      const responses = {};
+      surveyQuestions.forEach(question => {
+        const state = questionStates.get(question.id);
+        responses[question.id] = {
+          question: question.title,
+          type: question.type,
+          value: state?.value || null,
+          isValid: state?.isValid || false
+        };
+      });
+
+      // Show success message with summary
+      const summary = `
+        🎉 Survey Submitted Successfully!
+
+        Survey Summary:
+        - Total Questions: ${surveyQuestions.length}
+        - Completed Questions: ${Object.values(responses).filter(r => r.isValid).length}
+        - Response Time: ${new Date().toLocaleTimeString()}
+
+        Your responses have been recorded. Thank you for participating!
+
+        Key Responses:
+        • Name: ${responses.name?.value || 'Not provided'}
+        • Email: ${responses.email?.value || 'Not provided'}
+        • Experience Level: ${responses.experience?.value || 'Not selected'}
+        • Known Languages: ${responses.languages?.value?.join(', ') || 'None selected'}
+        • Projects Completed: ${responses.projects?.value || 'Not provided'}
+      `;
+
+      alert(summary);
+
+      // Reset form
+      form.reset();
+      questionStates.clear();
+      renderQuestions();
+      validationSummary.classList.remove("show");
+    }
+  });
+
+  // Initialize survey
+  renderQuestions();
+  validateAllQuestions();
+</script>
+
+</body>
+</html>

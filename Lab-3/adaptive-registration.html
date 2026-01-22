@@ -2,234 +2,892 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Adaptive Registration System</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Adaptive Registration System with Dynamic Validation</title>
   <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
     body {
-      font-family: Arial, sans-serif;
-      background: #f4f6f8;
-      padding: 30px;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+      color: #333;
     }
 
-    form {
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
       background: white;
-      padding: 25px;
-      max-width: 450px;
-      margin: auto;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      border-radius: 15px;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
     }
 
-    h2 {
+    .header {
+      background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+      color: white;
+      padding: 25px;
       text-align: center;
     }
 
+    .header h1 {
+      font-size: 28px;
+      margin-bottom: 5px;
+    }
+
+    .header p {
+      opacity: 0.9;
+      font-size: 14px;
+    }
+
+    .form-container {
+      padding: 30px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+      position: relative;
+    }
+
+    .form-group.hidden {
+      display: none;
+    }
+
     label {
-      font-weight: bold;
       display: block;
-      margin-top: 12px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #555;
+      font-size: 14px;
     }
 
-    input, select {
+    .required::after {
+      content: " *";
+      color: #e74c3c;
+    }
+
+    input, select, textarea {
       width: 100%;
-      padding: 8px;
-      margin-top: 5px;
+      padding: 12px 15px;
+      border: 2px solid #e1e8ed;
+      border-radius: 8px;
+      font-size: 16px;
+      transition: all 0.3s ease;
+      background: #fafbfc;
     }
 
-    .error {
-      color: red;
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: #4CAF50;
+      background: white;
+      box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+    }
+
+    input.valid {
+      border-color: #4CAF50;
+      background: #f8fff9;
+    }
+
+    input.invalid {
+      border-color: #e74c3c;
+      background: #fff8f8;
+    }
+
+    select.valid {
+      border-color: #4CAF50;
+      background: #f8fff9;
+    }
+
+    select.invalid {
+      border-color: #e74c3c;
+      background: #fff8f8;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    .error-message {
+      color: #e74c3c;
       font-size: 13px;
+      margin-top: 5px;
+      display: block;
+      font-weight: 500;
     }
 
-    .valid {
-      border: 2px solid green;
+    .success-message {
+      color: #4CAF50;
+      font-size: 13px;
+      margin-top: 5px;
+      display: block;
+      font-weight: 500;
     }
 
-    .invalid {
-      border: 2px solid red;
+    .password-strength {
+      margin-top: 8px;
+      display: flex;
+      gap: 5px;
     }
 
-    button {
-      margin-top: 20px;
-      width: 100%;
-      padding: 10px;
-      background: #007bff;
-      color: white;
-      border: none;
-      cursor: pointer;
+    .strength-bar {
+      height: 4px;
+      flex: 1;
+      border-radius: 2px;
+      transition: all 0.3s ease;
+    }
+
+    .strength-weak { background: #e74c3c; }
+    .strength-medium { background: #f39c12; }
+    .strength-strong { background: #27ae60; }
+    .strength-very-strong { background: #4CAF50; }
+
+    .role-info {
+      background: #e8f5e8;
+      border: 1px solid #4CAF50;
+      border-radius: 8px;
+      padding: 15px;
+      margin-top: 10px;
+      font-size: 14px;
+    }
+
+    .role-info h4 {
+      color: #2e7d32;
+      margin-bottom: 8px;
       font-size: 16px;
     }
 
-    button:disabled {
-      background: gray;
-      cursor: not-allowed;
+    .role-info ul {
+      margin-left: 20px;
+      color: #388e3c;
     }
 
-    #skillsField {
+    .role-info li {
+      margin-bottom: 3px;
+    }
+
+    .submit-btn {
+      width: 100%;
+      padding: 15px;
+      background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 18px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-top: 10px;
+    }
+
+    .submit-btn:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3);
+    }
+
+    .submit-btn:disabled {
+      background: #cccccc;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .validation-summary {
+      background: #fff3cd;
+      border: 1px solid #ffc107;
+      border-radius: 8px;
+      padding: 15px;
+      margin-top: 20px;
       display: none;
+    }
+
+    .validation-summary.show {
+      display: block;
+    }
+
+    .validation-summary h4 {
+      color: #856404;
+      margin-bottom: 10px;
+    }
+
+    .validation-summary ul {
+      margin-left: 20px;
+    }
+
+    .validation-summary li {
+      margin-bottom: 5px;
+      color: #856404;
+    }
+
+    .field-hint {
+      font-size: 12px;
+      color: #666;
+      margin-top: 5px;
+      font-style: italic;
+    }
+
+    .progress-indicator {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 30px;
+      position: relative;
+    }
+
+    .step {
+      flex: 1;
+      text-align: center;
+      position: relative;
+      z-index: 1;
+    }
+
+    .step::before {
+      content: '';
+      position: absolute;
+      top: 15px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: #e1e8ed;
+      z-index: -1;
+    }
+
+    .step.active::before {
+      background: #4CAF50;
+    }
+
+    .step-circle {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: #e1e8ed;
+      color: #666;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      margin: 0 auto 8px;
+      transition: all 0.3s ease;
+    }
+
+    .step.active .step-circle {
+      background: #4CAF50;
+      color: white;
+    }
+
+    .step.completed .step-circle {
+      background: #27ae60;
+      color: white;
+    }
+
+    .step-label {
+      font-size: 12px;
+      color: #666;
+      font-weight: 500;
+    }
+
+    .step.active .step-label {
+      color: #4CAF50;
     }
   </style>
 </head>
 
 <body>
 
-<form id="registerForm">
-  <h2>Registration Form</h2>
-
-  <label>Name</label>
-  <input type="text" id="name">
-  <span class="error" id="nameError"></span>
-
-  <label>Email</label>
-  <input type="email" id="email">
-  <span class="error" id="emailError"></span>
-
-  <label>Password</label>
-  <input type="password" id="password">
-  <span class="error" id="passwordError"></span>
-
-  <label>Confirm Password</label>
-  <input type="password" id="confirmPassword">
-  <span class="error" id="confirmError"></span>
-
-  <label>Age</label>
-  <input type="number" id="age">
-  <span class="error" id="ageError"></span>
-
-  <label>Role</label>
-  <select id="role">
-    <option value="">Select Role</option>
-    <option value="student">Student</option>
-    <option value="teacher">Teacher</option>
-    <option value="admin">Admin</option>
-  </select>
-  <span class="error" id="roleError"></span>
-
-  <div id="skillsField">
-    <label>Skills</label>
-    <input type="text" id="skills" placeholder="e.g. Java, ML">
+<div class="container">
+  <div class="header">
+    <h1>🎓 Adaptive Registration System</h1>
+    <p>Dynamic validation rules based on your selected role</p>
   </div>
 
-  <button type="submit" id="submitBtn" disabled>Register</button>
-</form>
+  <div class="form-container">
+    <div class="progress-indicator">
+      <div class="step active" id="step1">
+        <div class="step-circle">1</div>
+        <div class="step-label">Basic Info</div>
+      </div>
+      <div class="step" id="step2">
+        <div class="step-circle">2</div>
+        <div class="step-label">Credentials</div>
+      </div>
+      <div class="step" id="step3">
+        <div class="step-circle">3</div>
+        <div class="step-label">Role Details</div>
+      </div>
+    </div>
+
+    <form id="registerForm">
+      <!-- Basic Information -->
+      <div class="form-group">
+        <label for="name" class="required">Full Name</label>
+        <input type="text" id="name" placeholder="Enter your full name">
+        <span class="error-message" id="nameError"></span>
+      </div>
+
+      <div class="form-group">
+        <label for="email" class="required">Email Address</label>
+        <input type="email" id="email" placeholder="your.email@domain.com">
+        <span class="error-message" id="emailError"></span>
+        <span class="field-hint" id="emailHint">Accepted domains: gmail.com, yahoo.com, edu.in, school.edu</span>
+      </div>
+
+      <div class="form-group">
+        <label for="age" class="required">Age</label>
+        <input type="number" id="age" placeholder="Enter your age" min="1" max="120">
+        <span class="error-message" id="ageError"></span>
+      </div>
+
+      <!-- Role Selection -->
+      <div class="form-group">
+        <label for="role" class="required">Select Your Role</label>
+        <select id="role">
+          <option value="">Choose your role...</option>
+          <option value="student">🎓 Student</option>
+          <option value="teacher">👨‍🏫 Teacher</option>
+          <option value="admin">⚡ Administrator</option>
+        </select>
+        <span class="error-message" id="roleError"></span>
+        <div class="role-info" id="roleInfo" style="display: none;">
+          <h4 id="roleTitle">Role Requirements</h4>
+          <ul id="roleRequirements">
+            <li>Loading requirements...</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Credentials -->
+      <div class="form-group">
+        <label for="password" class="required">Password</label>
+        <input type="password" id="password" placeholder="Create a strong password">
+        <div class="password-strength" id="passwordStrength">
+          <div class="strength-bar"></div>
+          <div class="strength-bar"></div>
+          <div class="strength-bar"></div>
+          <div class="strength-bar"></div>
+        </div>
+        <span class="error-message" id="passwordError"></span>
+        <span class="field-hint" id="passwordHint">Password requirements vary by role</span>
+      </div>
+
+      <div class="form-group">
+        <label for="confirmPassword" class="required">Confirm Password</label>
+        <input type="password" id="confirmPassword" placeholder="Confirm your password">
+        <span class="error-message" id="confirmError"></span>
+      </div>
+
+      <!-- Role-specific fields -->
+      <div class="form-group hidden" id="studentIdField">
+        <label for="studentId">Student ID</label>
+        <input type="text" id="studentId" placeholder="Enter your student ID">
+        <span class="error-message" id="studentIdError"></span>
+        <span class="field-hint">Required for student verification</span>
+      </div>
+
+      <div class="form-group hidden" id="departmentField">
+        <label for="department">Department</label>
+        <input type="text" id="department" placeholder="e.g., Computer Science, Mathematics">
+        <span class="error-message" id="departmentError"></span>
+      </div>
+
+      <div class="form-group hidden" id="experienceField">
+        <label for="experience">Years of Experience</label>
+        <input type="number" id="experience" placeholder="Years of teaching/admin experience" min="0" max="50">
+        <span class="error-message" id="experienceError"></span>
+      </div>
+
+      <div class="form-group hidden" id="skillsField">
+        <label for="skills">Professional Skills</label>
+        <textarea id="skills" placeholder="List your key skills (comma-separated)&#10;e.g., JavaScript, Python, Data Analysis, Project Management"></textarea>
+        <span class="error-message" id="skillsError"></span>
+        <span class="field-hint">At least 3 skills required for teachers and admins</span>
+      </div>
+
+      <div class="form-group hidden" id="securityQuestionField">
+        <label for="securityQuestion">Security Question</label>
+        <input type="text" id="securityQuestion" placeholder="Enter a security question for password recovery">
+        <span class="error-message" id="securityQuestionError"></span>
+        <span class="field-hint">Required for admin accounts</span>
+      </div>
+
+      <!-- Validation Summary -->
+      <div class="validation-summary" id="validationSummary">
+        <h4>📋 Validation Summary</h4>
+        <ul id="validationList"></ul>
+      </div>
+
+      <!-- Submit Button -->
+      <button type="submit" class="submit-btn" id="submitBtn" disabled>
+        🚀 Complete Registration
+      </button>
+    </form>
+  </div>
+</div>
 
 <script>
+  // 1️⃣ Dynamic Validation Configuration
+  const validationRules = {
+    student: {
+      name: { minLength: 2, required: true },
+      email: {
+        required: true,
+        domains: ["gmail.com", "yahoo.com", "edu.in", "school.edu"],
+        roleSpecific: ["edu.in", "school.edu"]
+      },
+      age: { min: 13, max: 30, required: true },
+      password: {
+        minLength: 6,
+        pattern: /.{6,}/,
+        requirements: "Minimum 6 characters"
+      },
+      studentId: { required: true, pattern: /^[A-Z]{2}\d{6}$/, message: "Format: XX123456 (2 letters + 6 digits)" },
+      skills: { required: false }
+    },
+    teacher: {
+      name: { minLength: 3, required: true },
+      email: {
+        required: true,
+        domains: ["gmail.com", "yahoo.com", "edu.in", "school.edu"],
+        roleSpecific: ["edu.in", "school.edu"]
+      },
+      age: { min: 21, max: 70, required: true },
+      password: {
+        minLength: 8,
+        pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/,
+        requirements: "8+ chars, 1 uppercase, 1 lowercase, 1 number"
+      },
+      department: { required: true, minLength: 3 },
+      experience: { required: true, min: 1, max: 50 },
+      skills: {
+        required: true,
+        minSkills: 3,
+        message: "At least 3 skills required"
+      }
+    },
+    admin: {
+      name: { minLength: 3, required: true },
+      email: {
+        required: true,
+        domains: ["gmail.com", "yahoo.com", "edu.in", "school.edu"]
+      },
+      age: { min: 25, max: 65, required: true },
+      password: {
+        minLength: 10,
+        pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{10,}$/,
+        requirements: "10+ chars, 1 uppercase, 1 lowercase, 1 number, 1 special character"
+      },
+      department: { required: true, minLength: 3 },
+      experience: { required: true, min: 3, max: 50 },
+      skills: {
+        required: true,
+        minSkills: 5,
+        message: "At least 5 skills required"
+      },
+      securityQuestion: { required: true, minLength: 10 }
+    }
+  };
+
+  // DOM Elements
   const form = document.getElementById("registerForm");
   const submitBtn = document.getElementById("submitBtn");
+  const roleSelect = document.getElementById("role");
 
-  const emailDomains = ["gmail.com", "yahoo.com", "edu.in", "school.edu"];
+  let currentRole = "";
+  let validationErrors = [];
 
-  function validateName() {
-    const name = document.getElementById("name");
-    if (name.value.length < 3) {
-      setError(name, "Minimum 3 characters");
-      return false;
+  // 2️⃣ Email Domain Validation Function
+  function validateEmailDomain(email, role) {
+    const emailValue = email.value.trim();
+    if (!emailValue) return { valid: false, message: "Email is required" };
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(emailValue)) {
+      return { valid: false, message: "Invalid email format" };
     }
-    setValid(name);
-    return true;
+
+    const domain = emailValue.split("@")[1];
+    const rules = validationRules[role];
+
+    if (!rules.email.domains.includes(domain)) {
+      return {
+        valid: false,
+        message: `Invalid domain. Accepted: ${rules.email.domains.join(", ")}`
+      };
+    }
+
+    // Role-specific domain preferences
+    if (rules.email.roleSpecific && !rules.email.roleSpecific.includes(domain)) {
+      return {
+        valid: false,
+        message: `${role.charAt(0).toUpperCase() + role.slice(1)}s prefer: ${rules.email.roleSpecific.join(", ")}`
+      };
+    }
+
+    return { valid: true };
   }
 
-  function validateEmail() {
-    const email = document.getElementById("email");
-    const domain = email.value.split("@")[1];
+  // 3️⃣ Password Strength Validation with Visual Indicators
+  function validatePasswordStrength(password, role) {
+    const passwordValue = password.value;
+    const rules = validationRules[role];
+    const strengthBars = document.querySelectorAll(".strength-bar");
 
-    if (!domain || !emailDomains.includes(domain)) {
-      setError(email, "Invalid email domain");
-      return false;
+    if (!passwordValue) {
+      resetPasswordStrength();
+      return { valid: false, message: "Password is required" };
     }
-    setValid(email);
-    return true;
+
+    const isValid = rules.password.pattern.test(passwordValue);
+
+    // Calculate strength
+    let strength = 0;
+    if (passwordValue.length >= rules.password.minLength) strength++;
+    if (/[a-z]/.test(passwordValue)) strength++;
+    if (/[A-Z]/.test(passwordValue)) strength++;
+    if (/\d/.test(passwordValue)) strength++;
+    if (/[@$!%*?&]/.test(passwordValue)) strength++;
+
+    // Update visual indicators
+    strengthBars.forEach((bar, index) => {
+      bar.className = "strength-bar";
+      if (index < strength) {
+        if (strength <= 2) bar.classList.add("strength-weak");
+        else if (strength <= 3) bar.classList.add("strength-medium");
+        else if (strength <= 4) bar.classList.add("strength-strong");
+        else bar.classList.add("strength-very-strong");
+      }
+    });
+
+    if (!isValid) {
+      return { valid: false, message: rules.password.requirements };
+    }
+
+    return { valid: true };
   }
 
-  function validatePassword() {
-    const password = document.getElementById("password");
-    const role = document.getElementById("role").value;
+  function resetPasswordStrength() {
+    const strengthBars = document.querySelectorAll(".strength-bar");
+    strengthBars.forEach(bar => bar.className = "strength-bar");
+  }
 
-    let pattern;
-    if (role === "admin") {
-      pattern = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{10,}$/;
+  // 4️⃣ Dynamic Field Management
+  function updateDynamicFields(role) {
+    // Hide all role-specific fields first
+    const fields = ["studentIdField", "departmentField", "experienceField", "skillsField", "securityQuestionField"];
+    fields.forEach(fieldId => {
+      document.getElementById(fieldId).classList.add("hidden");
+    });
+
+    if (!role) return;
+
+    const rules = validationRules[role];
+
+    // Show relevant fields based on role
+    if (role === "student") {
+      document.getElementById("studentIdField").classList.remove("hidden");
+    } else if (role === "teacher" || role === "admin") {
+      document.getElementById("departmentField").classList.remove("hidden");
+      document.getElementById("experienceField").classList.remove("hidden");
+      document.getElementById("skillsField").classList.remove("hidden");
+      if (role === "admin") {
+        document.getElementById("securityQuestionField").classList.remove("hidden");
+      }
+    }
+
+    // Update role information display
+    updateRoleInfo(role);
+  }
+
+  function updateRoleInfo(role) {
+    const roleInfo = document.getElementById("roleInfo");
+    const roleTitle = document.getElementById("roleTitle");
+    const roleRequirements = document.getElementById("roleRequirements");
+
+    if (!role) {
+      roleInfo.style.display = "none";
+      return;
+    }
+
+    const rules = validationRules[role];
+    roleTitle.textContent = `${role.charAt(0).toUpperCase() + role.slice(1)} Requirements`;
+
+    const requirements = [
+      `Name: Minimum ${rules.name.minLength} characters`,
+      `Age: ${rules.age.min} - ${rules.age.max} years`,
+      `Password: ${rules.password.requirements}`,
+      `Email domains: ${rules.email.domains.join(", ")}`
+    ];
+
+    if (rules.skills && rules.skills.required) {
+      requirements.push(`Skills: At least ${rules.skills.minSkills} required`);
+    }
+
+    if (rules.experience) {
+      requirements.push(`Experience: ${rules.experience.min}+ years required`);
+    }
+
+    roleRequirements.innerHTML = requirements.map(req => `<li>${req}</li>`).join("");
+    roleInfo.style.display = "block";
+  }
+
+  // 5️⃣ Individual Field Validation Functions
+  function validateField(fieldId, role) {
+    if (!role) return true;
+
+    const field = document.getElementById(fieldId);
+    const rules = validationRules[role];
+    const fieldRules = rules[fieldId.replace("Field", "").replace("Error", "")];
+
+    if (!fieldRules) return true;
+
+    let isValid = true;
+    let message = "";
+
+    switch (fieldId) {
+      case "name":
+        if (!field.value.trim()) {
+          isValid = false;
+          message = "Name is required";
+        } else if (field.value.trim().length < fieldRules.minLength) {
+          isValid = false;
+          message = `Minimum ${fieldRules.minLength} characters required`;
+        }
+        break;
+
+      case "email":
+        const emailResult = validateEmailDomain(field, role);
+        isValid = emailResult.valid;
+        message = emailResult.message;
+        break;
+
+      case "age":
+        const age = parseInt(field.value);
+        if (!field.value) {
+          isValid = false;
+          message = "Age is required";
+        } else if (age < fieldRules.min || age > fieldRules.max) {
+          isValid = false;
+          message = `Age must be between ${fieldRules.min} and ${fieldRules.max}`;
+        }
+        break;
+
+      case "password":
+        const passwordResult = validatePasswordStrength(field, role);
+        isValid = passwordResult.valid;
+        message = passwordResult.message;
+        break;
+
+      case "confirmPassword":
+        if (field.value !== document.getElementById("password").value) {
+          isValid = false;
+          message = "Passwords do not match";
+        }
+        break;
+
+      case "studentId":
+        if (fieldRules.required && !fieldRules.pattern.test(field.value)) {
+          isValid = false;
+          message = fieldRules.message;
+        }
+        break;
+
+      case "department":
+        if (fieldRules.required && field.value.trim().length < fieldRules.minLength) {
+          isValid = false;
+          message = `Department name must be at least ${fieldRules.minLength} characters`;
+        }
+        break;
+
+      case "experience":
+        const exp = parseInt(field.value);
+        if (fieldRules.required && (!field.value || exp < fieldRules.min)) {
+          isValid = false;
+          message = `Minimum ${fieldRules.min} years of experience required`;
+        }
+        break;
+
+      case "skills":
+        if (fieldRules.required) {
+          const skillsList = field.value.split(",").map(s => s.trim()).filter(s => s.length > 0);
+          if (skillsList.length < fieldRules.minSkills) {
+            isValid = false;
+            message = fieldRules.message;
+          }
+        }
+        break;
+
+      case "securityQuestion":
+        if (fieldRules.required && field.value.trim().length < fieldRules.minLength) {
+          isValid = false;
+          message = `Security question must be at least ${fieldRules.minLength} characters`;
+        }
+        break;
+    }
+
+    // Update field appearance
+    if (isValid) {
+      field.classList.remove("invalid");
+      field.classList.add("valid");
+      document.getElementById(fieldId + "Error").textContent = "";
     } else {
-      pattern = /.{6,}/;
+      field.classList.remove("valid");
+      field.classList.add("invalid");
+      document.getElementById(fieldId + "Error").textContent = message;
     }
 
-    if (!pattern.test(password.value)) {
-      setError(password, role === "admin"
-        ? "Admin: 10 chars, uppercase, number, special char"
-        : "Minimum 6 characters");
-      return false;
-    }
-    setValid(password);
-    return true;
+    return isValid;
   }
 
-  function validateConfirmPassword() {
-    const pwd = document.getElementById("password").value;
-    const confirm = document.getElementById("confirmPassword");
-
-    if (pwd !== confirm.value) {
-      setError(confirm, "Passwords do not match");
-      return false;
-    }
-    setValid(confirm);
-    return true;
-  }
-
-  function validateAge() {
-    const age = document.getElementById("age");
-    if (age.value < 18) {
-      setError(age, "Must be 18 or above");
-      return false;
-    }
-    setValid(age);
-    return true;
-  }
-
-  function validateRole() {
-    const role = document.getElementById("role");
-    const skillsField = document.getElementById("skillsField");
-
-    if (role.value === "") {
-      setError(role, "Select a role");
-      return false;
-    }
-
-    // Show skills only for Teacher/Admin
-    skillsField.style.display =
-      role.value === "student" ? "none" : "block";
-
-    setValid(role);
-    return true;
-  }
-
-  function setError(input, message) {
-    input.classList.add("invalid");
-    input.classList.remove("valid");
-    document.getElementById(input.id + "Error").innerText = message;
-  }
-
-  function setValid(input) {
-    input.classList.add("valid");
-    input.classList.remove("invalid");
-    document.getElementById(input.id + "Error").innerText = "";
-  }
-
+  // 6️⃣ Complete Form Validation
   function validateForm() {
-    const isValid =
-      validateName() &
-      validateEmail() &
-      validatePassword() &
-      validateConfirmPassword() &
-      validateAge() &
-      validateRole();
+    if (!currentRole) return false;
 
-    submitBtn.disabled = !isValid;
+    validationErrors = [];
+    let allValid = true;
+
+    // Validate all fields
+    const fields = ["name", "email", "age", "password", "confirmPassword"];
+
+    // Add role-specific fields
+    const roleSpecificFields = {
+      student: ["studentId"],
+      teacher: ["department", "experience", "skills"],
+      admin: ["department", "experience", "skills", "securityQuestion"]
+    };
+
+    if (roleSpecificFields[currentRole]) {
+      fields.push(...roleSpecificFields[currentRole]);
+    }
+
+    fields.forEach(fieldId => {
+      const isValid = validateField(fieldId, currentRole);
+      if (!isValid) {
+        allValid = false;
+        const errorMsg = document.getElementById(fieldId + "Error").textContent;
+        if (errorMsg) {
+          validationErrors.push(`${fieldId.charAt(0).toUpperCase() + fieldId.slice(1)}: ${errorMsg}`);
+        }
+      }
+    });
+
+    // Update validation summary
+    updateValidationSummary();
+
+    // Update progress indicator
+    updateProgressIndicator();
+
+    // Enable/disable submit button
+    submitBtn.disabled = !allValid;
+
+    return allValid;
   }
 
-  form.addEventListener("input", validateForm);
+  function updateValidationSummary() {
+    const summary = document.getElementById("validationSummary");
+    const list = document.getElementById("validationList");
 
-  form.addEventListener("submit", function (e) {
-    e.preventDefault();
-    alert("Registration Successful!");
+    if (validationErrors.length > 0) {
+      list.innerHTML = validationErrors.map(error => `<li>❌ ${error}</li>`).join("");
+      summary.classList.add("show");
+    } else {
+      summary.classList.remove("show");
+    }
+  }
+
+  function updateProgressIndicator() {
+    const steps = ["step1", "step2", "step3"];
+
+    // Check completion of each step
+    const stepValidations = {
+      step1: validateField("name", currentRole) && validateField("email", currentRole) && validateField("age", currentRole),
+      step2: validateField("password", currentRole) && validateField("confirmPassword", currentRole),
+      step3: currentRole && document.getElementById("role").value !== ""
+    };
+
+    steps.forEach((stepId, index) => {
+      const step = document.getElementById(stepId);
+      const isValid = stepValidations[stepId];
+
+      step.classList.remove("active", "completed");
+
+      if (index === 0 && currentRole) {
+        step.classList.add("active");
+      } else if (isValid) {
+        step.classList.add("completed");
+      } else if (index > 0 && stepValidations[steps[index - 1]]) {
+        step.classList.add("active");
+      }
+    });
+  }
+
+  // Event Listeners
+  roleSelect.addEventListener("change", function() {
+    currentRole = this.value;
+    updateDynamicFields(currentRole);
+    document.getElementById("passwordHint").textContent =
+      currentRole ? `Password requirements: ${validationRules[currentRole].password.requirements}` : "Password requirements vary by role";
+    validateForm();
   });
+
+  form.addEventListener("input", function(e) {
+    const fieldId = e.target.id;
+    if (fieldId && currentRole) {
+      validateField(fieldId, currentRole);
+      validateForm();
+    }
+  });
+
+  form.addEventListener("submit", function(e) {
+    e.preventDefault();
+
+    if (validateForm()) {
+      // Simulate successful registration
+      const formData = {
+        name: document.getElementById("name").value,
+        email: document.getElementById("email").value,
+        age: document.getElementById("age").value,
+        role: currentRole,
+        department: document.getElementById("department").value || null,
+        experience: document.getElementById("experience").value || null,
+        skills: document.getElementById("skills").value || null,
+        securityQuestion: document.getElementById("securityQuestion").value || null
+      };
+
+      // Show success message
+      const successMessage = `
+        🎉 Registration Successful!
+
+        Welcome ${formData.name}!
+        Role: ${currentRole.charAt(0).toUpperCase() + currentRole.slice(1)}
+
+        Your account has been created with the following details:
+        - Email: ${formData.email}
+        - Age: ${formData.age}
+        ${formData.department ? `- Department: ${formData.department}` : ''}
+        ${formData.experience ? `- Experience: ${formData.experience} years` : ''}
+
+        You can now log in to access your dashboard.
+      `;
+
+      alert(successMessage);
+
+      // Reset form
+      form.reset();
+      currentRole = "";
+      updateDynamicFields("");
+      resetPasswordStrength();
+      document.getElementById("roleInfo").style.display = "none";
+      document.getElementById("validationSummary").classList.remove("show");
+      updateProgressIndicator();
+    }
+  });
+
+  // Initialize
+  updateDynamicFields("");
+  updateProgressIndicator();
 </script>
 
 </body>
