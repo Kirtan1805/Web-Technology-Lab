@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Adaptive Registration System</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
+      padding: 30px;
+    }
+
+    form {
+      background: white;
+      padding: 25px;
+      max-width: 450px;
+      margin: auto;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      text-align: center;
+    }
+
+    label {
+      font-weight: bold;
+      display: block;
+      margin-top: 12px;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+    }
+
+    .error {
+      color: red;
+      font-size: 13px;
+    }
+
+    .valid {
+      border: 2px solid green;
+    }
+
+    .invalid {
+      border: 2px solid red;
+    }
+
+    button {
+      margin-top: 20px;
+      width: 100%;
+      padding: 10px;
+      background: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    button:disabled {
+      background: gray;
+      cursor: not-allowed;
+    }
+
+    #skillsField {
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+
+<form id="registerForm">
+  <h2>Registration Form</h2>
+
+  <label>Name</label>
+  <input type="text" id="name">
+  <span class="error" id="nameError"></span>
+
+  <label>Email</label>
+  <input type="email" id="email">
+  <span class="error" id="emailError"></span>
+
+  <label>Password</label>
+  <input type="password" id="password">
+  <span class="error" id="passwordError"></span>
+
+  <label>Confirm Password</label>
+  <input type="password" id="confirmPassword">
+  <span class="error" id="confirmError"></span>
+
+  <label>Age</label>
+  <input type="number" id="age">
+  <span class="error" id="ageError"></span>
+
+  <label>Role</label>
+  <select id="role">
+    <option value="">Select Role</option>
+    <option value="student">Student</option>
+    <option value="teacher">Teacher</option>
+    <option value="admin">Admin</option>
+  </select>
+  <span class="error" id="roleError"></span>
+
+  <div id="skillsField">
+    <label>Skills</label>
+    <input type="text" id="skills" placeholder="e.g. Java, ML">
+  </div>
+
+  <button type="submit" id="submitBtn" disabled>Register</button>
+</form>
+
+<script>
+  const form = document.getElementById("registerForm");
+  const submitBtn = document.getElementById("submitBtn");
+
+  const emailDomains = ["gmail.com", "yahoo.com", "edu.in", "school.edu"];
+
+  function validateName() {
+    const name = document.getElementById("name");
+    if (name.value.length < 3) {
+      setError(name, "Minimum 3 characters");
+      return false;
+    }
+    setValid(name);
+    return true;
+  }
+
+  function validateEmail() {
+    const email = document.getElementById("email");
+    const domain = email.value.split("@")[1];
+
+    if (!domain || !emailDomains.includes(domain)) {
+      setError(email, "Invalid email domain");
+      return false;
+    }
+    setValid(email);
+    return true;
+  }
+
+  function validatePassword() {
+    const password = document.getElementById("password");
+    const role = document.getElementById("role").value;
+
+    let pattern;
+    if (role === "admin") {
+      pattern = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{10,}$/;
+    } else {
+      pattern = /.{6,}/;
+    }
+
+    if (!pattern.test(password.value)) {
+      setError(password, role === "admin"
+        ? "Admin: 10 chars, uppercase, number, special char"
+        : "Minimum 6 characters");
+      return false;
+    }
+    setValid(password);
+    return true;
+  }
+
+  function validateConfirmPassword() {
+    const pwd = document.getElementById("password").value;
+    const confirm = document.getElementById("confirmPassword");
+
+    if (pwd !== confirm.value) {
+      setError(confirm, "Passwords do not match");
+      return false;
+    }
+    setValid(confirm);
+    return true;
+  }
+
+  function validateAge() {
+    const age = document.getElementById("age");
+    if (age.value < 18) {
+      setError(age, "Must be 18 or above");
+      return false;
+    }
+    setValid(age);
+    return true;
+  }
+
+  function validateRole() {
+    const role = document.getElementById("role");
+    const skillsField = document.getElementById("skillsField");
+
+    if (role.value === "") {
+      setError(role, "Select a role");
+      return false;
+    }
+
+    // Show skills only for Teacher/Admin
+    skillsField.style.display =
+      role.value === "student" ? "none" : "block";
+
+    setValid(role);
+    return true;
+  }
+
+  function setError(input, message) {
+    input.classList.add("invalid");
+    input.classList.remove("valid");
+    document.getElementById(input.id + "Error").innerText = message;
+  }
+
+  function setValid(input) {
+    input.classList.add("valid");
+    input.classList.remove("invalid");
+    document.getElementById(input.id + "Error").innerText = "";
+  }
+
+  function validateForm() {
+    const isValid =
+      validateName() &
+      validateEmail() &
+      validatePassword() &
+      validateConfirmPassword() &
+      validateAge() &
+      validateRole();
+
+    submitBtn.disabled = !isValid;
+  }
+
+  form.addEventListener("input", validateForm);
+
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    alert("Registration Successful!");
+  });
+</script>
+
+</body>
+</html>
