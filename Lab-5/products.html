@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Product Inventory System</title>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+
+body{
+  font-family:'Segoe UI',sans-serif;
+  background:linear-gradient(135deg,#1f4037,#99f2c8);
+  min-height:100vh;
+  padding:20px;
+}
+
+.container{
+  max-width:1100px;
+  margin:auto;
+  background:white;
+  border-radius:15px;
+  overflow:hidden;
+  box-shadow:0 20px 40px rgba(0,0,0,0.2);
+}
+
+.header{
+  background:linear-gradient(135deg,#ff9966,#ff5e62);
+  color:white;
+  padding:25px;
+  text-align:center;
+}
+
+.section{padding:25px;}
+
+input{
+  padding:10px;
+  margin:5px;
+  border-radius:8px;
+  border:1px solid #ccc;
+  width:160px;
+}
+
+button{
+  padding:10px 15px;
+  border:none;
+  border-radius:8px;
+  cursor:pointer;
+  font-weight:600;
+  margin:5px;
+}
+
+.btn-primary{background:#28a745;color:white;}
+.btn-warning{background:#f39c12;color:white;}
+.btn-danger{background:#e74c3c;color:white;}
+.btn-info{background:#3498db;color:white;}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  margin-top:20px;
+}
+
+th,td{
+  padding:12px;
+  border-bottom:1px solid #eee;
+  text-align:center;
+}
+
+th{background:#f4f6f9;}
+
+.low-stock{
+  background:#ffe6e6;
+  color:#c0392b;
+  font-weight:bold;
+}
+
+.status{
+  margin-top:15px;
+  font-weight:600;
+}
+
+.success{color:green;}
+.error{color:red;}
+.loading{color:#f39c12;}
+
+.total-box{
+  margin-top:15px;
+  font-weight:bold;
+  font-size:18px;
+  color:#2c3e50;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <div class="header">
+    <h1>📦 Product Inventory System</h1>
+    <p>Fetch API + CRUD + Search + Dynamic Calculations</p>
+  </div>
+
+  <div class="section">
+
+    <button class="btn-info" onclick="loadProducts()">Load Inventory</button>
+
+    <h3 style="margin-top:20px;">Add / Edit Product</h3>
+
+    <input type="number" id="prodId" placeholder="Product ID">
+    <input type="text" id="prodName" placeholder="Name">
+    <input type="text" id="prodCategory" placeholder="Category">
+    <input type="number" id="prodPrice" placeholder="Price">
+    <input type="number" id="prodStock" placeholder="Stock">
+
+    <br>
+
+    <button class="btn-primary" onclick="addProduct()">Add</button>
+    <button class="btn-warning" onclick="editProduct()">Edit</button>
+
+    <br><br>
+
+    <input type="text" id="searchCategory" placeholder="Search by Category">
+    <button class="btn-info" onclick="searchByCategory()">Search</button>
+
+    <div id="statusMessage" class="status"></div>
+
+    <div class="total-box" id="totalValue"></div>
+
+    <table id="inventoryTable">
+      <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Category</th>
+        <th>Price</th>
+        <th>Stock</th>
+        <th>Total Value</th>
+        <th>Action</th>
+      </tr>
+    </table>
+
+  </div>
+</div>
+
+<script>
+
+let products = [];
+
+// ================= LOAD =================
+async function loadProducts(){
+  showStatus("Loading inventory...","loading");
+  try{
+    const response = await fetch("inventory.json");
+    if(!response.ok) throw new Error("Failed to load JSON");
+    const data = await response.json();
+    products = data.products || [];
+    displayProducts(products);
+    showStatus("Inventory loaded successfully!","success");
+  }catch(error){
+    console.error(error);
+    showStatus("Error loading or parsing JSON!","error");
+  }
+}
+
+// ================= DISPLAY =================
+function displayProducts(list){
+
+  const table=document.getElementById("inventoryTable");
+
+  table.innerHTML=`
+    <tr>
+      <th>ID</th><th>Name</th><th>Category</th>
+      <th>Price</th><th>Stock</th>
+      <th>Total Value</th><th>Action</th>
+    </tr>
+  `;
+
+  let totalInventoryValue=0;
+
+  list.forEach((product,index)=>{
+
+    const productTotal = product.price * product.stock;
+    totalInventoryValue += productTotal;
+
+    const lowStockClass = product.stock <= 5 ? "low-stock" : "";
+
+    table.innerHTML+=`
+      <tr class="${lowStockClass}">
+        <td>${product.id}</td>
+        <td>${product.name}</td>
+        <td>${product.category}</td>
+        <td>₹${product.price}</td>
+        <td>${product.stock}</td>
+        <td>₹${productTotal}</td>
+        <td>
+          <button class="btn-danger" onclick="deleteProduct(${index})">Delete</button>
+        </td>
+      </tr>
+    `;
+  });
+
+  document.getElementById("totalValue").innerText =
+    "Total Inventory Value: ₹" + totalInventoryValue;
+}
+
+// ================= ADD =================
+function addProduct(){
+
+  const id=prodId.value.trim();
+  const name=prodName.value.trim();
+  const category=prodCategory.value.trim();
+  const price=prodPrice.value.trim();
+  const stock=prodStock.value.trim();
+
+  if(!id||!name||!category||!price||!stock)
+    return showStatus("All fields are required!","error");
+
+  if(products.some(p=>p.id==id))
+    return showStatus("Product ID already exists!","error");
+
+  if(price<0||stock<0)
+    return showStatus("Price/Stock cannot be negative!","error");
+
+  products.push({
+    id:Number(id),
+    name,
+    category,
+    price:Number(price),
+    stock:Number(stock)
+  });
+
+  displayProducts(products);
+  showStatus("Product added successfully!","success");
+}
+
+// ================= EDIT =================
+function editProduct(){
+
+  const id=prodId.value.trim();
+  const price=prodPrice.value.trim();
+  const stock=prodStock.value.trim();
+
+  const product=products.find(p=>p.id==id);
+
+  if(!product)
+    return showStatus("Product not found!","error");
+
+  if(price) product.price=Number(price);
+  if(stock) product.stock=Number(stock);
+
+  displayProducts(products);
+  showStatus("Product updated successfully!","success");
+}
+
+// ================= DELETE =================
+function deleteProduct(index){
+  products.splice(index,1);
+  displayProducts(products);
+  showStatus("Product deleted successfully!","success");
+}
+
+// ================= SEARCH =================
+function searchByCategory(){
+  const category=searchCategory.value.trim().toLowerCase();
+  const filtered=products.filter(p=>
+    p.category.toLowerCase().includes(category)
+  );
+  displayProducts(filtered);
+}
+
+// ================= STATUS =================
+function showStatus(msg,type){
+  const status=document.getElementById("statusMessage");
+  status.innerText=msg;
+  status.className="status "+type;
+}
+
+</script>
+
+</body>
+</html>

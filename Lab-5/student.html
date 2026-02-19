@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Record System - JSON</title>
+
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  font-family:'Segoe UI',sans-serif;
+  background:linear-gradient(135deg,#667eea,#764ba2);
+  min-height:100vh;
+  padding:20px;
+}
+
+.container {
+  max-width:1000px;
+  margin:auto;
+  background:white;
+  border-radius:15px;
+  overflow:hidden;
+  box-shadow:0 20px 40px rgba(0,0,0,0.2);
+}
+
+.header {
+  background:linear-gradient(135deg,#36d1dc,#5b86e5);
+  color:white;
+  padding:25px;
+  text-align:center;
+}
+
+.section { padding:25px; }
+
+input {
+  padding:10px;
+  margin:5px;
+  border-radius:8px;
+  border:1px solid #ccc;
+  width:180px;
+}
+
+button {
+  padding:10px 15px;
+  border:none;
+  border-radius:8px;
+  cursor:pointer;
+  font-weight:600;
+  margin:5px;
+  transition:0.3s;
+}
+
+.btn-primary { background:#4CAF50; color:white; }
+.btn-warning { background:#f39c12; color:white; }
+.btn-danger { background:#e74c3c; color:white; }
+.btn-info { background:#3498db; color:white; }
+
+button:hover { opacity:0.85; }
+
+table {
+  width:100%;
+  border-collapse:collapse;
+  margin-top:20px;
+}
+
+th, td {
+  padding:12px;
+  border-bottom:1px solid #eee;
+  text-align:center;
+}
+
+th { background:#f4f6f9; }
+
+.status {
+  margin-top:15px;
+  font-weight:600;
+}
+
+.success { color:green; }
+.error { color:red; }
+.loading { color:#f39c12; }
+
+.empty {
+  text-align:center;
+  padding:20px;
+  color:#777;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <div class="header">
+    <h1>🎓 Student Record System</h1>
+    <p>Fetch API + JSON + Dynamic CRUD</p>
+  </div>
+
+  <div class="section">
+
+    <button class="btn-info" onclick="loadStudents()">Load Students</button>
+
+    <h3 style="margin-top:20px;">Add / Update Student</h3>
+
+    <input type="number" id="stuId" placeholder="Student ID">
+    <input type="text" id="stuName" placeholder="Name">
+    <input type="text" id="stuCourse" placeholder="Course">
+    <input type="number" id="stuMarks" placeholder="Marks">
+
+    <br>
+
+    <button class="btn-primary" onclick="addStudent()">Add</button>
+    <button class="btn-warning" onclick="updateStudent()">Update</button>
+
+    <div id="statusMessage" class="status"></div>
+
+    <table id="studentTable">
+      <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Course</th>
+        <th>Marks</th>
+        <th>Action</th>
+      </tr>
+    </table>
+
+  </div>
+</div>
+
+<script>
+
+let studentsData = [];
+
+// ================= LOAD JSON =================
+async function loadStudents() {
+
+  showStatus("Loading students...", "loading");
+
+  try {
+    const response = await fetch("students.json");
+
+    if (!response.ok)
+      throw new Error("Failed to load JSON file");
+
+    const data = await response.json();  // response.json()
+
+    studentsData = data.students || [];
+
+    displayStudents();
+    showStatus("Students loaded successfully!", "success");
+
+  } catch (error) {
+    console.error(error);
+    showStatus("JSON parsing or loading error!", "error");
+  }
+}
+
+// ================= DISPLAY =================
+function displayStudents() {
+
+  const table = document.getElementById("studentTable");
+
+  table.innerHTML = `
+    <tr>
+      <th>ID</th>
+      <th>Name</th>
+      <th>Course</th>
+      <th>Marks</th>
+      <th>Action</th>
+    </tr>
+  `;
+
+  if (studentsData.length === 0) {
+    table.innerHTML += `<tr><td colspan="5" class="empty">No Students Found</td></tr>`;
+    return;
+  }
+
+  studentsData.forEach((student, index) => {
+    table.innerHTML += `
+      <tr>
+        <td>${student.id}</td>
+        <td>${student.name}</td>
+        <td>${student.course}</td>
+        <td>${student.marks}</td>
+        <td>
+          <button class="btn-danger" onclick="deleteStudent(${index})">Delete</button>
+        </td>
+      </tr>
+    `;
+  });
+}
+
+// ================= CREATE =================
+function addStudent() {
+
+  const id = stuId.value.trim();
+  const name = stuName.value.trim();
+  const course = stuCourse.value.trim();
+  const marks = stuMarks.value.trim();
+
+  if (!id || !name || !course || !marks)
+    return showStatus("All fields are required!", "error");
+
+  if (studentsData.some(s => s.id == id))
+    return showStatus("Student ID already exists!", "error");
+
+  studentsData.push({
+    id: Number(id),
+    name,
+    course,
+    marks: Number(marks)
+  });
+
+  displayStudents();
+  showStatus("Student added successfully (temporary).", "success");
+}
+
+// ================= UPDATE =================
+function updateStudent() {
+
+  const id = stuId.value.trim();
+  const course = stuCourse.value.trim();
+  const marks = stuMarks.value.trim();
+
+  if (!id)
+    return showStatus("Provide Student ID!", "error");
+
+  const student = studentsData.find(s => s.id == id);
+
+  if (!student)
+    return showStatus("Student not found!", "error");
+
+  if (course) student.course = course;
+  if (marks) student.marks = Number(marks);
+
+  displayStudents();
+  showStatus("Student updated successfully!", "success");
+}
+
+// ================= DELETE =================
+function deleteStudent(index) {
+  studentsData.splice(index, 1);
+  displayStudents();
+  showStatus("Student deleted successfully!", "success");
+}
+
+// ================= STATUS =================
+function showStatus(message, type) {
+  const status = document.getElementById("statusMessage");
+  status.innerText = message;
+  status.className = "status " + type;
+}
+
+</script>
+
+</body>
+</html>
