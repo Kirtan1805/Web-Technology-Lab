@@ -1,0 +1,126 @@
+{
+  "products": [
+    {
+      "id": 1,
+      "name": "Apple iPhone 15 Pro",
+      "category": "Smartphones",
+      "price": 1199.99
+    },
+    {
+      "id": 2,
+      "name": "Samsung Galaxy S24 Ultra",
+      "category": "Smartphones",
+      "price": 1099.99
+    },
+    {
+      "id": 3,
+      "name": "Google Pixel 9",
+      "category": "Smartphones",
+      "price": 899.99
+    },
+    {
+      "id": 4,
+      "name": "Dell XPS 15 Laptop",
+      "category": "Laptops",
+      "price": 1699.0
+    },
+    {
+      "id": 5,
+      "name": "Apple MacBook Air M3",
+      "category": "Laptops",
+      "price": 1399.0
+    },
+    {
+      "id": 6,
+      "name": "Lenovo ThinkPad X1 Carbon",
+      "category": "Laptops",
+      "price": 1899.0
+    },
+    {
+      "id": 7,
+      "name": "Sony WH-1000XM5 Headphones",
+      "category": "Audio",
+      "price": 399.99
+    },
+    {
+      "id": 8,
+      "name": "Apple AirPods Pro 2",
+      "category": "Audio",
+      "price": 249.99
+    },
+    {
+      "id": 9,
+      "name": "JBL Flip 7 Bluetooth Speaker",
+      "category": "Audio",
+      "price": 149.99
+    },
+    {
+      "id": 10,
+      "name": "Logitech MX Master 4 Mouse",
+      "category": "Accessories",
+      "price": 129.99
+    },
+    {
+      "id": 11,
+      "name": "Keychron K8 Pro Mechanical Keyboard",
+      "category": "Accessories",
+      "price": 119.99
+    },
+    {
+      "id": 12,
+      "name": "Apple iPad Air 6",
+      "category": "Tablets",
+      "price": 799.99
+    },
+    {
+      "id": 13,
+      "name": "Samsung Galaxy Tab S10",
+      "category": "Tablets",
+      "price": 899.99
+    },
+    {
+      "id": 14,
+      "name": "Amazon Kindle Paperwhite",
+      "category": "E-Readers",
+      "price": 139.99
+    },
+    {
+      "id": 15,
+      "name": "Nintendo Switch 2",
+      "category": "Gaming",
+      "price": 399.99
+    },
+    {
+      "id": 16,
+      "name": "Sony PlayStation 6",
+      "category": "Gaming",
+      "price": 599.99
+    },
+    {
+      "id": 17,
+      "name": "Xbox Series Z",
+      "category": "Gaming",
+      "price": 549.99
+    },
+    {
+      "id": 18,
+      "name": "LG 4K UltraWide Monitor 34\"",
+      "category": "Monitors",
+      "price": 699.99
+    },
+    {
+      "id": 19,
+      "name": "ASUS ROG 27\" Gaming Monitor",
+      "category": "Monitors",
+      "price": 499.99
+    },
+    {
+      "id": 20,
+      "name": "Apple Watch Series 10",
+      "category": "Wearables",
+      "price": 499.99
+    }
+  ]
+}
+
+

@@ -1,0 +1,36 @@
+{
+  "students": [
+    {
+      "id": "S101",
+      "name": "Alice Johnson",
+      "department": "Computer Science",
+      "marks": 92
+    },
+    {
+      "id": "S102",
+      "name": "Bob Smith",
+      "department": "Information Technology",
+      "marks": 78
+    },
+    {
+      "id": "S103",
+      "name": "Charlie Davis",
+      "department": "Electronics",
+      "marks": 85
+    },
+    {
+      "id": "S104",
+      "name": "Diana Lee",
+      "department": "Mechanical",
+      "marks": 88
+    },
+    {
+      "id": "S105",
+      "name": "Ethan Brown",
+      "department": "Civil",
+      "marks": 73
+    }
+  ]
+}
+
+

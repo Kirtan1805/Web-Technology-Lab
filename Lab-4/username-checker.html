@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Real-Time Username Availability Checker</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+      color: #333;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 15px;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #FF6B6B 0%, #4ECDC4 100%);
+      color: white;
+      padding: 25px;
+      text-align: center;
+    }
+
+    .header h1 {
+      font-size: 28px;
+      margin-bottom: 5px;
+    }
+
+    .header p {
+      opacity: 0.9;
+      font-size: 14px;
+    }
+
+    .form-container {
+      padding: 30px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #333;
+      font-size: 14px;
+    }
+
+    .required::after {
+      content: " *";
+      color: #e74c3c;
+    }
+
+    .input-wrapper {
+      position: relative;
+    }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="password"] {
+      width: 100%;
+      padding: 12px 15px;
+      padding-right: 100px;
+      border: 2px solid #e1e8ed;
+      border-radius: 8px;
+      font-size: 16px;
+      transition: all 0.3s ease;
+      background: white;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: #4ECDC4;
+      box-shadow: 0 0 0 3px rgba(78, 205, 196, 0.1);
+    }
+
+    input.valid {
+      border-color: #4ECDC4;
+      background: #f8fff9;
+    }
+
+    input.invalid {
+      border-color: #e74c3c;
+      background: #fff8f8;
+    }
+
+    input.checking {
+      border-color: #f39c12;
+      background: #fffbf0;
+    }
+
+    .status-indicator {
+      position: absolute;
+      right: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .status-indicator .icon {
+      width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      font-size: 12px;
+    }
+
+    .status-available {
+      color: #4ECDC4;
+    }
+
+    .status-available .icon {
+      background: #4ECDC4;
+      color: white;
+    }
+
+    .status-taken {
+      color: #e74c3c;
+    }
+
+    .status-taken .icon {
+      background: #e74c3c;
+      color: white;
+    }
+
+    .status-checking {
+      color: #f39c12;
+    }
+
+    .status-checking .icon {
+      background: #f39c12;
+      color: white;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    .validation-message {
+      margin-top: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 24px;
+    }
+
+    .validation-message.available {
+      color: #4ECDC4;
+    }
+
+    .validation-message.taken {
+      color: #e74c3c;
+    }
+
+    .validation-message.checking {
+      color: #f39c12;
+    }
+
+    .validation-message.error {
+      color: #e74c3c;
+    }
+
+    .loading-spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid #f39c12;
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    .submit-btn {
+      width: 100%;
+      padding: 15px;
+      background: linear-gradient(135deg, #4ECDC4 0%, #45b7aa 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 18px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-top: 10px;
+    }
+
+    .submit-btn:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(78, 205, 196, 0.3);
+    }
+
+    .submit-btn:disabled {
+      background: #cccccc;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .info-box {
+      background: #e8f5e8;
+      border: 1px solid #4ECDC4;
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 20px;
+      font-size: 14px;
+      color: #2e7d32;
+    }
+
+    .info-box h4 {
+      margin-bottom: 8px;
+      color: #2e7d32;
+    }
+
+    .info-box ul {
+      margin-left: 20px;
+      margin-top: 8px;
+    }
+
+    .info-box li {
+      margin-bottom: 4px;
+    }
+
+    .username-rules {
+      background: #fff3cd;
+      border: 1px solid #ffc107;
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 20px;
+      font-size: 13px;
+      color: #856404;
+    }
+
+    .username-rules h4 {
+      margin-bottom: 8px;
+      color: #856404;
+    }
+
+    .username-rules ul {
+      margin-left: 20px;
+    }
+
+    .username-rules li {
+      margin-bottom: 4px;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        margin: 10px;
+      }
+
+      .form-container {
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+  <div class="header">
+    <h1>🔍 Real-Time Username Availability Checker</h1>
+    <p>Instant username validation without page refresh</p>
+  </div>
+
+  <div class="form-container">
+    <div class="info-box">
+      <h4>ℹ️ How It Works</h4>
+      <p>Enter a username below and we'll check its availability in real-time using AJAX. The check happens automatically as you type!</p>
+    </div>
+
+    <div class="username-rules">
+      <h4>📋 Username Requirements</h4>
+      <ul>
+        <li>Must be 3-20 characters long</li>
+        <li>Can contain letters, numbers, and underscores</li>
+        <li>Must start with a letter</li>
+        <li>No spaces or special characters allowed</li>
+      </ul>
+    </div>
+
+    <form id="registrationForm">
+      <div class="form-group">
+        <label for="username" class="required">Username</label>
+        <div class="input-wrapper">
+          <input 
+            type="text" 
+            id="username" 
+            name="username" 
+            placeholder="Enter your desired username"
+            autocomplete="username"
+            minlength="3"
+            maxlength="20"
+            pattern="^[a-zA-Z][a-zA-Z0-9_]{2,19}$"
+          >
+          <div class="status-indicator" id="statusIndicator" style="display: none;">
+            <span class="icon" id="statusIcon"></span>
+            <span id="statusText"></span>
+          </div>
+        </div>
+        <div class="validation-message" id="validationMessage"></div>
+      </div>
+
+      <div class="form-group">
+        <label for="email" class="required">Email Address</label>
+        <input 
+          type="email" 
+          id="email" 
+          name="email" 
+          placeholder="your.email@example.com"
+          required
+        >
+      </div>
+
+      <div class="form-group">
+        <label for="password" class="required">Password</label>
+        <input 
+          type="password" 
+          id="password" 
+          name="password" 
+          placeholder="Create a strong password"
+          required
+          minlength="8"
+        >
+      </div>
+
+      <button type="submit" class="submit-btn" id="submitBtn" disabled>
+        🚀 Create Account
+      </button>
+    </form>
+  </div>
+</div>
+
+<script>
+  // DOM Elements
+  const usernameInput = document.getElementById('username');
+  const statusIndicator = document.getElementById('statusIndicator');
+  const statusIcon = document.getElementById('statusIcon');
+  const statusText = document.getElementById('statusText');
+  const validationMessage = document.getElementById('validationMessage');
+  const submitBtn = document.getElementById('submitBtn');
+  const form = document.getElementById('registrationForm');
+
+  // State management
+  let checkTimeout;
+  let isChecking = false;
+  let isUsernameAvailable = false;
+  let isUsernameValid = false;
+
+  // 1️⃣ Username Format Validation
+  function validateUsernameFormat(username) {
+    const pattern = /^[a-zA-Z][a-zA-Z0-9_]{2,19}$/;
+    return pattern.test(username);
+  }
+
+  // 2️⃣ AJAX Username Availability Check using Fetch API
+  async function checkUsernameAvailability(username) {
+    // Reset state
+    isChecking = true;
+    isUsernameAvailable = false;
+
+    // Show checking state
+    showCheckingState();
+
+    try {
+      // Simulate network delay for realistic experience
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      // Fetch the JSON file with taken usernames
+      const response = await fetch('usernames.json');
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      const takenUsernames = data.takenUsernames || [];
+
+      // Check if username is taken
+      const isTaken = takenUsernames.some(
+        taken => taken.toLowerCase() === username.toLowerCase()
+      );
+
+      isChecking = false;
+      isUsernameAvailable = !isTaken;
+
+      // Update UI based on result
+      if (isTaken) {
+        showTakenState();
+      } else {
+        showAvailableState();
+      }
+
+      // Update form submission state
+      updateSubmitButton();
+
+    } catch (error) {
+      console.error('Error checking username availability:', error);
+      isChecking = false;
+      showErrorState('Unable to check username availability. Please try again.');
+      updateSubmitButton();
+    }
+  }
+
+  // 3️⃣ Alternative AJAX using XMLHttpRequest (for demonstration)
+  function checkUsernameAvailabilityXHR(username) {
+    return new Promise((resolve, reject) => {
+      isChecking = true;
+      showCheckingState();
+
+      const xhr = new XMLHttpRequest();
+      xhr.open('GET', 'usernames.json', true);
+      xhr.setRequestHeader('Content-Type', 'application/json');
+
+      xhr.onload = function() {
+        if (xhr.status === 200) {
+          try {
+            const data = JSON.parse(xhr.responseText);
+            const takenUsernames = data.takenUsernames || [];
+            const isTaken = takenUsernames.some(
+              taken => taken.toLowerCase() === username.toLowerCase()
+            );
+
+            isChecking = false;
+            isUsernameAvailable = !isTaken;
+
+            if (isTaken) {
+              showTakenState();
+            } else {
+              showAvailableState();
+            }
+
+            updateSubmitButton();
+            resolve(!isTaken);
+          } catch (error) {
+            reject(error);
+          }
+        } else {
+          reject(new Error(`HTTP error! status: ${xhr.status}`));
+        }
+      };
+
+      xhr.onerror = function() {
+        isChecking = false;
+        showErrorState('Network error. Please check your connection.');
+        updateSubmitButton();
+        reject(new Error('Network error'));
+      };
+
+      xhr.ontimeout = function() {
+        isChecking = false;
+        showErrorState('Request timeout. Please try again.');
+        updateSubmitButton();
+        reject(new Error('Request timeout'));
+      };
+
+      xhr.timeout = 5000; // 5 second timeout
+      xhr.send();
+    });
+  }
+
+  // 4️⃣ UI State Management Functions
+  function showCheckingState() {
+    usernameInput.classList.remove('valid', 'invalid');
+    usernameInput.classList.add('checking');
+
+    statusIndicator.style.display = 'flex';
+    statusIcon.textContent = '⟳';
+    statusIcon.className = 'icon status-checking';
+    statusText.textContent = 'Checking...';
+    statusText.className = 'status-checking';
+
+    validationMessage.innerHTML = '<span class="loading-spinner"></span> Checking username availability...';
+    validationMessage.className = 'validation-message checking';
+  }
+
+  function showAvailableState() {
+    usernameInput.classList.remove('invalid', 'checking');
+    usernameInput.classList.add('valid');
+
+    statusIndicator.style.display = 'flex';
+    statusIcon.textContent = '✓';
+    statusIcon.className = 'icon status-available';
+    statusText.textContent = 'Available';
+    statusText.className = 'status-available';
+
+    validationMessage.innerHTML = '✓ <strong>Username available!</strong> This username is free to use.';
+    validationMessage.className = 'validation-message available';
+  }
+
+  function showTakenState() {
+    usernameInput.classList.remove('valid', 'checking');
+    usernameInput.classList.add('invalid');
+
+    statusIndicator.style.display = 'flex';
+    statusIcon.textContent = '✗';
+    statusIcon.className = 'icon status-taken';
+    statusText.textContent = 'Taken';
+    statusText.className = 'status-taken';
+
+    validationMessage.innerHTML = '✗ <strong>Username already taken.</strong> Please choose a different username.';
+    validationMessage.className = 'validation-message taken';
+  }
+
+  function showErrorState(message) {
+    usernameInput.classList.remove('valid', 'checking');
+    usernameInput.classList.add('invalid');
+
+    statusIndicator.style.display = 'none';
+    validationMessage.innerHTML = `⚠️ ${message}`;
+    validationMessage.className = 'validation-message error';
+  }
+
+  function showFormatError() {
+    usernameInput.classList.remove('valid', 'checking');
+    usernameInput.classList.add('invalid');
+
+    statusIndicator.style.display = 'none';
+    validationMessage.innerHTML = '⚠️ Username must be 3-20 characters, start with a letter, and contain only letters, numbers, and underscores.';
+    validationMessage.className = 'validation-message error';
+  }
+
+  function clearValidation() {
+    usernameInput.classList.remove('valid', 'invalid', 'checking');
+    statusIndicator.style.display = 'none';
+    validationMessage.textContent = '';
+    validationMessage.className = 'validation-message';
+  }
+
+  // 5️⃣ Update Submit Button State
+  function updateSubmitButton() {
+    const isFormValid = isUsernameValid && isUsernameAvailable && !isChecking;
+    submitBtn.disabled = !isFormValid;
+  }
+
+  // 6️⃣ Event Listeners
+  usernameInput.addEventListener('input', function(e) {
+    const username = e.target.value.trim();
+
+    // Clear previous timeout
+    clearTimeout(checkTimeout);
+
+    // Clear validation if empty
+    if (username === '') {
+      clearValidation();
+      isUsernameValid = false;
+      isUsernameAvailable = false;
+      updateSubmitButton();
+      return;
+    }
+
+    // Validate format first
+    if (!validateUsernameFormat(username)) {
+      showFormatError();
+      isUsernameValid = false;
+      isUsernameAvailable = false;
+      updateSubmitButton();
+      return;
+    }
+
+    isUsernameValid = true;
+
+    // Debounce: Wait 500ms after user stops typing before checking
+    checkTimeout = setTimeout(() => {
+      // Use Fetch API (you can switch to checkUsernameAvailabilityXHR for XMLHttpRequest)
+      checkUsernameAvailability(username);
+    }, 500);
+  });
+
+  // 7️⃣ Form Submission Handler
+  form.addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    // Final validation check
+    if (!isUsernameValid || !isUsernameAvailable) {
+      alert('Please ensure the username is valid and available before submitting.');
+      return;
+    }
+
+    // Collect form data
+    const formData = {
+      username: usernameInput.value.trim(),
+      email: document.getElementById('email').value,
+      password: document.getElementById('password').value,
+      submittedAt: new Date().toISOString()
+    };
+
+    // Simulate form submission
+    console.log('Form submitted:', formData);
+
+    // Show success message
+    alert(`✅ Registration Successful!\n\nUsername: ${formData.username}\nEmail: ${formData.email}\n\nYour account has been created successfully!`);
+
+    // Reset form
+    form.reset();
+    clearValidation();
+    isUsernameValid = false;
+    isUsernameAvailable = false;
+    updateSubmitButton();
+  });
+
+  // 8️⃣ Prevent submission on Enter key if username is invalid
+  usernameInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && (!isUsernameValid || !isUsernameAvailable)) {
+      e.preventDefault();
+      alert('Please ensure the username is valid and available before submitting.');
+    }
+  });
+
+  // Initialize
+  updateSubmitButton();
+</script>
+
+</body>
+</html>
