@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Online Book Finder</title>
+    <link rel="stylesheet" href="books.css">
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>Online Book Finder</h1>
+            <p>Lab-7 MongoDB Book Query Operations</p>
+            <nav>
+                <a href="index.html" class="nav-link">Go to Notes Manager</a>
+            </nav>
+        </header>
+
+        <main>
+            <!-- 1. Search Books by Title -->
+            <section class="control-panel">
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="Search books by title (e.g., javascript)...">
+                    <button id="searchBtn" class="btn btn-primary">Search</button>
+                    <button id="clearSearchBtn" class="btn btn-outline">Clear</button>
+                </div>
+
+                <div class="filters-sort-container">
+                    <!-- 2. Filter Books by Category -->
+                    <div class="filter-group">
+                        <label>Filter by Category:</label>
+                        <div class="filter-buttons">
+                            <button class="btn filter-btn active" data-category="all">All</button>
+                            <button class="btn filter-btn" data-category="Programming">Programming</button>
+                            <button class="btn filter-btn" data-category="Database">Database</button>
+                            <button class="btn filter-btn" data-category="Data Science">Data Science</button>
+                        </div>
+                    </div>
+
+                    <!-- 3. Sort Books -->
+                    <div class="sort-group">
+                        <label for="sortSelect">Sort By:</label>
+                        <select id="sortSelect" class="form-select">
+                            <option value="default">Default</option>
+                            <option value="price">Price (Low to High)</option>
+                            <option value="rating">Rating (High to Low)</option>
+                        </select>
+                    </div>
+
+                    <!-- 4. Top Rated Books -->
+                    <div class="top-rated-group">
+                        <button id="topRatedBtn" class="btn btn-success">Show Top Rated (>= 4.0)</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Results Display -->
+            <section class="results-section">
+                <div class="results-header">
+                    <h2 id="resultsTitle">All Books</h2>
+                    <span id="resultsCount" class="badge">0 items</span>
+                </div>
+
+                <div id="booksContainer" class="books-grid">
+                    <!-- Books will be dynamically injected here -->
+                </div>
+
+                <!-- 5. Pagination (Load More) -->
+                <div class="pagination-controls" id="paginationControls">
+                    <button id="loadMoreBtn" class="btn btn-primary btn-large">Load More</button>
+                    <p id="paginationStatus" class="pagination-status">Showing 0 of 0 books</p>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="books.js"></script>
+</body>
+
+</html>

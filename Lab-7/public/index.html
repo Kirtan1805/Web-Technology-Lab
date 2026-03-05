@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Notes Manager</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Student Notes Manager</h1>
+            <p>Lab-7 MongoDB with Frontend</p>
+        </header>
+
+        <main>
+            <section class="add-note-section">
+                <h2>Add a New Note</h2>
+                <form id="addNoteForm">
+                    <div class="form-group">
+                        <label for="title">Title</label>
+                        <input type="text" id="title" name="title" required placeholder="e.g., MongoDB Basics">
+                    </div>
+                    <div class="form-group">
+                        <label for="subject">Subject</label>
+                        <input type="text" id="subject" name="subject" required placeholder="e.g., Database">
+                    </div>
+                    <div class="form-group">
+                        <label for="description">Description</label>
+                        <textarea id="description" name="description" required placeholder="e.g., Introduction to MongoDB concepts"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Add Note</button>
+                </form>
+            </section>
+
+            <section class="view-notes-section">
+                <h2>Your Study Notes</h2>
+                <div id="notesContainer" class="notes-grid">
+                    <!-- Notes will be dynamically injected here via app.js -->
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Edit Note Modal -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h2>Edit Note</h2>
+            <form id="editNoteForm">
+                <input type="hidden" id="editNoteId">
+                <div class="form-group">
+                    <label for="editTitle">Title</label>
+                    <input type="text" id="editTitle" name="title" required>
+                </div>
+                <div class="form-group">
+                    <label for="editDescription">Description</label>
+                    <textarea id="editDescription" name="description" required></textarea>
+                </div>
+                <!-- Note: Subject is not updated per requirement 3, "Student can modify title or description" -->
+                <button type="submit" class="btn btn-success">Update Note</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
