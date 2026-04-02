@@ -1,10 +1,10 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import Ex3 from "./Ex3";
+import LabMenu from "./LabMenu";
 
 ReactDOM.createRoot(document.getElementById("app")).render(
   <React.StrictMode>
-    <Ex3 />
+    <LabMenu />
   </React.StrictMode>
 );
 
